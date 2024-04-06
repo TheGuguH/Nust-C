@@ -21,7 +21,7 @@ The language supports various primitive and special types, including:
 
 ### Primitive Types:
 
-* **i1**: an integer type that occupies 1 byte in memory, accepting numbers from 0 to 255. Its equals to **byte**.
+* **i1**: an integer type that occupies 1 byte in memory, accepting numbers from -128 to 127. Its equals to **byte**.
 * **i2**: an integer type that occupies 2 bytes in memory, accepting negative and positive numbers. Its equals to **short**.
 * **i4**: an integer type that occupies 4 bytes in memory, accepting negative and positive numbers. Its equals to **int**.
 * **i8**: an integer type that occupies 8 bytes in memory, accepting negative and positive numbers. Its equals to **long**.
@@ -32,10 +32,11 @@ The language supports various primitive and special types, including:
 * **f8**: a floating-point type that occupies 8 bytes in memory, accepting negative and positive numbers. Its equals to **double**.
 * **f16**: a floating-point type that occupies 16 bytes in memory, accepting negative and positive numbers.
 
-### Special Types:
-
 * **char**: a type that represents a character, currently only supporting ASCII characters.
 * **bool**: a type that accepts true and false values.
+
+### Special Types:
+
 * **string**: a type that represents a sequence of characters, supporting only ASCII characters.
 * **bitfield**: a type that occupies 1 byte in memory, representing a programming technique called bit field, where each bit of a byte or another type is used as a bool. In the case of Nust C, each bit can be accessed with the character # followed by the bit index (0 to 7). Each bit represents a bool.
 
@@ -52,7 +53,7 @@ Decimals are a special type, which although apparently work like a double, but m
 Decimals are divided into 3 parts (and is in this order):
 * **Sign flag**: tells whether or not it is a negative number, with 0 being positive and 1 being negative.
 * **Decimal index**: carries the size of the decimal digits in bits, example: the number 8 (1000) is 4 in bits. The size is 5 in d4, 6 in d8, and 7 in d16.
-* **Value part**: represents the value itself, here both the decimal digits and the whole part are mixed and are differentiated by the decimal index. The size is 28 in d4, 57 in d8, and 120 in d16.
+* **Value part**: represents the value itself, here both the decimal digits and the whole part are mixed and are differentiated by the decimal index. The size is 26 in d4, 57 in d8, and 120 in d16.
 
 *The decimal index represens the size of decimal part (after the '.') in bits, i. e., the "value part" is separed in integer and decimal part. The sign flag represents the signal, if is 0, the signal is positive, if is 1, the signal is negative.*
 
