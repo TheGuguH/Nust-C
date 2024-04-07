@@ -5,8 +5,8 @@
 int main(int argc, char *argv[]){
 
     if(argc < 2){
-        printf();
-        return NO_ARGUMENTS;
+        printf("Sorry, but the compiler need a command, and some commands need arguments!\n");
+        return NO_COMMAND;
     }
 
     return 0;
