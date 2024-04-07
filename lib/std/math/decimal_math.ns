@@ -13,3 +13,7 @@ private global const d8 EPSILON = 0.0000000001; //precision
 ABS_FUNC(d8);
 
 SQRT_FUNC(d8, std::decimal_math);
+
+LN_FUNC(d8, std::decimal_math);
+
+EXP_FUNC(d8, std::decimal_math);

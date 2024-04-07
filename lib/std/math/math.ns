@@ -12,15 +12,6 @@ private global const f8 EPSILON = 0.000000000000001; //precision
 
 ABS_FUNC(f8);
 
-// def f8 Pow(f8 base, f8 expoent){
-
-//     f8 result = 0;
-
-//     //TODO: logic for power
-
-//     return result;
-// }
-
 SQRT_FUNC(f8, std::math);
 
 LN_FUNC(f8, std::math);
