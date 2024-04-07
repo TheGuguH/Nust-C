@@ -2,8 +2,8 @@
 #define ERROR_CODES_H
 
 enum {
-    NO_ARGUMENTS = 1,
-    
+    NO_COMMAND = 1,
+    NO_ARGUMENTS,
 };
 
 #endif

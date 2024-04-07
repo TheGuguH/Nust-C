@@ -23,33 +23,33 @@ def StopExecution{
     $__EXIT_PROGRAM__(0)
 }
 
-def Exception CreateException(string exception, string exceptionMessage, ExceptionType){
+def Exception CreateException(string exception, string exceptionMessage, ExceptionType exceptionType){
     Exception ex = {
         .exception = exception;
-        .exceptionMesage = exceptionMessage;
-        .exceptionType = ExceptionType.CustomByProgramers;
+        .exceptionMessage = exceptionMessage;
+        .exceptionType = exceptionType;
     };
     return ex;
 }
 
-def TrownNewException(string exception, string message){
+def ThrowNewException(string exception, string message){
     Exception exception = CreateException(exception, message, ExceptionType.CustomByProgramers);
 
-    $__TROWN_EXCEPTION__(exception)
+    $__THROW_EXCEPTION__(exception)
 }
 
-def TrownNotANumberException{
+def ThrowNotANumberException{
     Exception exception = CreateException("Invalid use of a constant or variable", 
     "An invalid use of a constant or variable value is used in a number context", 
     ExceptionType.InvalidUse);
 
-    $__TROWN_EXCEPTION__(exception)
+    $__THROW_EXCEPTION__(exception)
 }
 
-def TrownUnsafeOnSecurity{
+def ThrowUnsafeOnSecurity{
     Exception exception = CreateException("Unsafe on security context",
     "Use of a unsafe function in a security context",
     ExceptionType.UnsafeOnSecurity);
 
-    $__TROWN_EXCEPTION__(exception)
+    $__THROW_EXCEPTION__(exception)
 }
