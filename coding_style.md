@@ -62,7 +62,7 @@ Variable suffixes are intended to show what that variable has. Remembering that 
 - **Buffer**:
      This suffix is only applied to buffers, and can also be used as "Buffers" if it is an array or list of buffers. Example:
      ```c
-     int[5, 5] indexBuffers;
+     int indexBuffers[5];
      ```
 - **Index**:
      This suffix warns that it is an index variable; does not apply to for loops.
@@ -94,7 +94,7 @@ void *stringLocation;
 When used as a return, the '*' is used after the type, but attached. Because in this case the return is the pointer. Example:
 
 ```c
-rune_t* convertToRune(char[] characterString) {
+rune_t* convertToRune(char characterString[]) {
      //...
 }
 ```
@@ -120,7 +120,7 @@ SingleLinkedList* sll_create() {
 Function example:
 
 ```c
-rune_t* convertToRune(char[] characterString) {
+rune_t* convertToRune(char characterString[]) {
       //...
 }
 ```
@@ -327,10 +327,10 @@ enums
 
 "pure" typedef
 
-const
-
 union
 struct
+
+const
 
 macros
 
