@@ -53,7 +53,7 @@ void compileFiles(int argc, char **argv){
             context.createLogFile = TRUE;
         } else if (STR_N_EQUALS(argv[i], "-asmfile", 9)) {
             context.makeExecutable = FALSE;
-        }
+        } 
     }
 
     startCompiling(0, NULL, context);
