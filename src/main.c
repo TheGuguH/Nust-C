@@ -1,7 +1,7 @@
 #include "headers/main.h"
 
 #include "headers/error_codes.h"
-#include "front-end/headers/compiler.h"
+#include "compiler/front-end/headers/compiler.h"
 #include "headers/utils.h"
 
 #include <stdio.h>
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     } else if (STR_N_EQUALS(argv[1], "-nir",  5)) {
         compileFilesToNIR(argc, argv);
     } else {
-        puts("Sorry, but the passed command ins't a valid command, use -help command");
+        printError("Sorry, but the passed command ins't a valid command, use -help command", INVALID_COMMAND);
     }
 
     return 0;
@@ -29,14 +29,15 @@ int main(int argc, char *argv[]) {
 
 void compileFiles(int argc, char **argv){
     if (argc < 4) {
-        printError("Sorry, but the compiler need the output file, and the input files", CMP_NO_ARGUMENTS);
+        printError("Sorry, but the compiler need the output file, and the input files", NO_ARGUMENTS);
     }
 
     if (!isASCIIString(argv[2], strlen(argv[2]))) {
         CMP_INVALID_FILE_ASCII;
     }
 
-    char files[1];
+    char **filev;
+    size_t filec = 0;
     CompilerContext context = {FALSE, FALSE, TRUE, argv[2], MACHINE_ASSEMBLY, MACHINE_OS};
 
     for (int i = 3; i < argc; i++) {
@@ -53,10 +54,37 @@ void compileFiles(int argc, char **argv){
             context.createLogFile = TRUE;
         } else if (STR_N_EQUALS(argv[i], "-asmfile", 9)) {
             context.makeExecutable = FALSE;
-        } 
+        } else if (STR_N_EQUALS(argv[i], "-os", 4)) {
+            if (i + 1 >= argc) {
+                printError("Sorry, but you need to specify a os of argument '-os'", CMP_INVALID_OS_ARGUMENT_SYNTAX);
+            }
+
+            context.os = convertToOSEnum(argv[i + 1]);
+            i++;
+        } else {
+            size_t size = strlen(argv[i]);
+
+            if (!isASCIIString(argv[i], size)) {
+                CMP_INVALID_FILE_ASCII;
+            }
+
+            filev = realloc(filev, (filec + 1) * sizeof(char));
+
+            filev[filec] = malloc((size + 1) * sizeof(char));
+
+            strncpy(filev[filec], argv[i], size);
+
+            filec++;
+        }
     }
 
-    startCompiling(0, NULL, context);
+    startCompiling(filec, filev, context);
+
+    for (size_t i = 0; i < filec; i++) {
+        free(filev[i]);
+    }
+
+    free(filev);
 }
 
 void showHelp(int argc, char *argv[]){
@@ -96,3 +124,15 @@ int convertToAssemblyEnum(char assembly[]) {
     }
     return -1;
 }
+
+int convertToOSEnum(char assembly[]) {
+    if (STR_N_EQUALS(assembly, "-win", 5)) {
+        return ASSEMBLY_X86_64;
+    } else if (STR_N_EQUALS(assembly, "-linux", 7)) {
+        return ASSEMBLY_X86;
+    } else {
+        printError("Sorry, but the os passed ins't a os, use -help -os to show disponible os", INVALID_OS);
+    }
+    return -1;
+}
+

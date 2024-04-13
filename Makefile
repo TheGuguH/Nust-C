@@ -1,7 +1,7 @@
-exec = nscomp.out
-sources = $(wildcard src/*.c) $(wildcard src/front-end/*.c) $(wildcard src/back-end/*.c)
+exec = nct.out
+sources = $(wildcard src/*.c) $(wildcard src/compiler/front-end/*.c) $(wildcard src/compiler/back-end/*.c)
 objects = $(sources:.c=.o)
-flags = -g
+flags = -g -Wall -Wextra -std=c99 -I./headers
 
 $(exec): $(objects)
 	gcc $(objects) $(flags) -o $(exec)
@@ -17,5 +17,5 @@ clean:
 	-rm *.out
 	-rm *.o
 	-rm src/*.o
-	-rm src/front-end/*.o
-	-rm src/back-end/*.o
+	-rm src/compiler/front-end/*.o
+	-rm src/compiler/back-end/*.o

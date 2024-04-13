@@ -17,4 +17,6 @@ void isACompilableArchive(char file[]);
 
 int convertToAssemblyEnum(char assembly[]);
 
+int convertToOSEnum(char os[]);
+
 #endif
