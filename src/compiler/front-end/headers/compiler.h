@@ -15,6 +15,12 @@ enum {
     OS_LINUX,
 };
 
+enum {
+    FILE_SOURCE,
+    FILE_NLIB,
+    FILE_NIR,
+};
+
 typedef unsigned char bool_t;
 
 typedef struct {
@@ -24,7 +30,16 @@ typedef struct {
     char *finalName;
     int assemblyType;
     int os;
+    int recursivity;
+    int priorizeGlobal;
+    int stdlib;
+    int globalLib;
 } CompilerContext;
+
+typedef struct {
+    FILE *file;
+    int type;
+} NCTFile;
 
 #ifdef WIN32
     #define MACHINE_OS OS_WINDOWS
@@ -44,7 +59,15 @@ typedef struct {
     #endif
 #endif
 
-void startCompiling(int filec, FILE *filev[], CompilerContext context);
+void startCompiling(size_t filec, char *filev[], CompilerContext context);
+
+int isSourceFile(char file[]);
+
+int isNLIBFile(char file[]);
+
+int isNIRFile(char file[]);
+
+int isCompilable(char file[]);
 
 void cPrint(char _s[]);
 
