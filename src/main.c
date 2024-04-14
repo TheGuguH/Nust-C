@@ -145,4 +145,3 @@ int convertToOSEnum(char assembly[]) {
     }
     return -1;
 }
-

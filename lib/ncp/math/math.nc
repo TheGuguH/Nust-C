@@ -17,4 +17,3 @@ SQRT_FUNC(f8, std::math);
 LN_FUNC(f8, std::math);
 
 EXP_FUNC(f8, std::math); 
-
