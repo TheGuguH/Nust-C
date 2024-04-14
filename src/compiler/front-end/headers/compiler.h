@@ -27,18 +27,20 @@ typedef struct {
     bool_t showExtraInfo;
     bool_t createLogFile;
     bool_t makeExecutable;
-    char *finalName;
+    char *output;
     int assemblyType;
     int os;
-    int recursivity;
-    int priorizeGlobal;
+    int prioritizeGlobal;
     int stdlib;
     int globalLib;
+    char **sharedLibs;
+    size_t sharedLibsQuantity;
 } CompilerContext;
 
 typedef struct {
     FILE *file;
     int type;
+    char *name;
 } NCTFile;
 
 #ifdef WIN32
@@ -59,7 +61,7 @@ typedef struct {
     #endif
 #endif
 
-void startCompiling(size_t filec, char *filev[], CompilerContext context);
+void startCompiling(size_t file_c, char *file_v[], CompilerContext context);
 
 int isSourceFile(char file[]);
 
@@ -69,8 +71,8 @@ int isNIRFile(char file[]);
 
 int isCompilable(char file[]);
 
-void cPrint(char _s[]);
+void cPrint(char string[]);
 
-void cPrintError(char _s[], int errorCode);
+void cPrintError(char string[], int errorCode);
 
 #endif

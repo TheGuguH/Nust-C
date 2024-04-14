@@ -8,7 +8,7 @@
     Print a non-formated text and stop execution program, showing the code error.
 */
 
-void printError(char _s[], int errorCode);
+void printError(char string[], int errorCode);
 
 #define FALSE 0
 #define TRUE 1
@@ -17,9 +17,9 @@ void printError(char _s[], int errorCode);
     Shotcut for defining an formated error message, stop execution of program and showing the code error
 */
 
-#define P_ERROR_FORMAT(prefix) printf(prefix "%s\nError code: %d\n", _s, errorCode); \
+#define P_ERROR_FORMAT(prefix) printf(prefix "%s\nError code: %d\n", string, errorCode); \
     exit(errorCode); \
 
-#define STR_N_EQUALS(_s, comparating, comparatingSize) strncmp(_s, comparating, comparatingSize) == FALSE
+#define STR_N_EQUALS(string, comparating, comparatingSize) strncmp(string, comparating, comparatingSize) == FALSE
 
 #endif

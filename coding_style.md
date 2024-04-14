@@ -8,7 +8,7 @@ This *.md* includes the coding style of the Nust C compiler, but if you want to 
 
 ### '_t' typedef sufix 
 
-The use of the '_t' suffix when using typedef is only applied to "pure" typedefs, that is, typedefs that are not followed by a definition of a structure such as struct, union or enum. Example of a use of the suffix:
+The use of the '_t' suffix when using typedef is only applied to "pure" typedefs, that is, typedefs that are not followed by a definition of a structure such as struct, union or enum. Example of an use of the suffix:
 
 ```c
 typedef uint32_t rune_t;
@@ -59,6 +59,12 @@ int foo = 25;
 
 Variable suffixes are intended to show what that variable has. Remembering that the suffixes here are just to help when reading and writing the code, ignoring extremely repetitive and often unnecessary things like the "prt" prefix in some styles.
 
+- **s**:
+     This suffix is normaly ussed in arrays. Exemple:
+
+     ```c
+         FILE files[20];
+     ```
 - **Buffer**:
      This suffix is only applied to buffers, and can also be used as "Buffers" if it is an array or list of buffers. Example:
      ```c
@@ -70,11 +76,40 @@ Variable suffixes are intended to show what that variable has. Remembering that 
      ```c
          int fileIndex;
      ```
-- **is or has**:
+- **is, has, make and build**:
      These prefixes are only applied to variables that serve as a flag (boolean) for something. Example:
 
      ```c
          int hasBackground;
+     ```
+- **_c**:
+     This sufix marks a variable as a count, and normaly this goes with a value variable (see next sufix). The default value for this is *size_t*, but for args of main function, the normal type is *int*. Exemple:
+
+     ```c
+         size_t file_c;
+         FILE *file_v[];
+     ```
+- **_v**:
+     This sufix marks a variable as a value, and normaly this goes with a count value (see previus sufix). Exemple:
+
+     ```c
+         size_t file_c;
+         FILE *file_v[];
+     ```
+- **_s**:
+     This sufix marks a variable as a size, and normaly this goes with a string. The default type is *size_t*. Exemple:
+
+     ```c
+         char *identifier;
+         size_t identifier_s;
+     ```
+- **_**:
+     This prefix is used just for blocking clonflits, like: types, struct, union and enum name or extension name conflicts (like the one from clangd that warns that the identifier "namespace" is defined in Objective-C++ since you are programming in C). These conflict considerations MUST not be case-sensitive and need to ignore *s* sufix. Exemple:
+     
+     ```c
+         int isASCII(char _char) {
+             //...
+         }
      ```
 
 ### Pointers

@@ -6,33 +6,43 @@
 #include <stdio.h>
 #include <string.h>
 
-void startCompiling(size_t filec, char *filev[], CompilerContext context) {
-    if (filec < 1) {
+void startCompiling(size_t file_c, char *file_v[], CompilerContext context) {
+    if (file_c < 1) {
         cPrintError("don't have enough files", CMP_NO_INPUT_FILES);
     }
 
-    NCTFile *files[filec];
+    NCTFile files[file_c];
 
-    for (size_t i = 0; i < filec; i++) {
-        // if (isCompilable(filev[i])) {
-        //     if (isNIRFile(filev[i]) && filec > 1) {
-        //         cPrint("nir files don't link with other archives!");
-        //     }
-        //     continue;
-        // }
-
-        if (isSourceFile(filev[i])) {
-            files[i]->file = fopen(filev[i], "r");
-            files[i]->type = FILE_SOURCE;
-
-            if (files[i] == NULL) {
-                cPrintError("one or more passed input files don't exists", CMP_FILE_DONT_EXISTS);
-            }
-
-            continue;
+    for (size_t i = 0; i < file_c; i++) {
+        if (STR_N_EQUALS(file_v[i], context.output, strlen(context.output) + 1)) {
+            cPrintError("a input file is same as output", CMP_SAME_AS_OUTPUT);
         }
 
-        cPrintError("invalid input file", CMP_INVALID_FILE_FOR_THIS);
+        if (isSourceFile(file_v[i])) {
+            files[i].file = fopen(file_v[i], "r");
+            files[i].type = FILE_SOURCE;
+            files[i].name = file_v[i];
+
+        } else if (isNLIBFile(file_v[i])) {
+            files[i].file = fopen(file_v[i], "r");
+            files[i].type = FILE_NLIB;
+            files[i].name = file_v[i];
+
+        } else if (isNIRFile(file_v[i])) {
+            files[i].file = fopen(file_v[i], "r");
+            files[i].type = FILE_NIR;
+            files[i].name = file_v[i];
+
+            cPrint("nir files don't link with other archives!");
+
+        } else {
+            cPrintError("invalid input file", CMP_INVALID_FILE_FOR_THIS);
+        }
+
+        if (files[i].file == NULL) {
+            cPrintError("a input file don't exists", CMP_FILE_DONT_EXISTS);
+        }
+
     }
 
     
@@ -73,10 +83,10 @@ int isCompilable(char file[]) {
     return isSourceFile(file) || isNLIBFile(file) || isNIRFile(file);
 }
 
-void cPrint(char _s[]) {
-    printf("[Compiler]: %s\n", _s);
+void cPrint(char string[]) {
+    printf("[Compiler]: %s\n", string);
 }
 
-void cPrintError(char _s[], int errorCode) {
+void cPrintError(char string[], int errorCode) {
     P_ERROR_FORMAT("[Compiler]: ");
 }
