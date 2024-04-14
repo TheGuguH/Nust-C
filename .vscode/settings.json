@@ -1,0 +1,9 @@
+{
+    "workbench.iconTheme": "mc-dp-icons",
+    "files.associations": {
+        "*.c": "c",
+        "*.h": "c",
+        "*.cpp": "cpp",
+        "*.hpp": "cpp"
+    },
+}

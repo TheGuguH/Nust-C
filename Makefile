@@ -1,12 +1,12 @@
 exec = nct.out
 sources = $(wildcard src/*.c) $(wildcard src/compiler/front-end/*.c) $(wildcard src/compiler/back-end/*.c)
 objects = $(sources:.c=.o)
-flags = -g -Wall -Wextra -std=c99 -I./headers
+flags = -Wall -Wextra -std=c99 -I./headers
 
 $(exec): $(objects)
 	gcc $(objects) $(flags) -o $(exec)
 
-%.o: %.c include/%.h
+%.o: %.c headers/%.h
 	gcc -c $(flags) $< -o $@
 
 install:

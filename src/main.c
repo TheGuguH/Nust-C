@@ -27,44 +27,54 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void compileFiles(int argc, char **argv){
-    if (argc < 4) {
+void compileFiles(int arg_c, char **arg_v){
+    if (arg_c < 4) {
         printError("Sorry, but the compiler need the output file, and the input files", NO_ARGUMENTS);
     }
 
-    if (!isASCIIString(argv[2], strlen(argv[2]))) {
+    if (!isASCIIString(arg_v[2], strlen(arg_v[2]))) {
         CMP_INVALID_FILE_ASCII;
     }
 
     char **filev;
     size_t filec = 0;
-    CompilerContext context = {FALSE, FALSE, TRUE, argv[2], MACHINE_ASSEMBLY, MACHINE_OS};
+    CompilerContext context = {FALSE, FALSE, TRUE, arg_v[2], MACHINE_ASSEMBLY, MACHINE_OS, FALSE, TRUE, TRUE, NULL, 0};
 
-    for (int i = 3; i < argc; i++) {
-        if (STR_N_EQUALS(argv[i], "-asm", 5)) {
-            if (i + 1 >= argc) {
-                printError("Sorry, but you need to specify a assembly of argument '-asm'", CMP_INVALID_ASM_ARGUMENT_SYNTAX);
+    for (int i = 3; i < arg_c; i++) {
+        if (STR_N_EQUALS(arg_v[i], "-", 1)) {
+            if (STR_N_EQUALS(arg_v[i], "-asm", 5)) {
+                if (i + 1 >= arg_c) {
+                    printError("Sorry, but you need to specify a assembly of argument '-asm'", CMP_INVALID_ASM_ARGUMENT_SYNTAX);
+                }
+
+                context.assemblyType = convertToAssemblyEnum(arg_v[i + 1]);
+                i++;
+            } else if (STR_N_EQUALS(arg_v[i], "-extra", 7)) {
+                context.showExtraInfo = TRUE;
+            } else if (STR_N_EQUALS(arg_v[i], "-logfile", 9)) {
+                context.createLogFile = TRUE;
+            } else if (STR_N_EQUALS(arg_v[i], "-asmfile", 9)) {
+                context.makeExecutable = FALSE;
+            } else if (STR_N_EQUALS(arg_v[i], "-os", 4)) {
+                if (i + 1 >= arg_c) {
+                    printError("Sorry, but you need to specify a os of argument '-os'", CMP_INVALID_OS_ARGUMENT_SYNTAX);
+                }
+
+                context.os = convertToOSEnum(arg_v[i + 1]);
+                i++;
+            } else if (STR_N_EQUALS(arg_v[i], "-g", 3)) {
+                context.prioritizeGlobal = TRUE;
+            } else if (STR_N_EQUALS(arg_v[i], "-nostdlib", 10)) {
+                context.stdlib = FALSE;
+            } else if (STR_N_EQUALS(arg_v[i], "-noglib", 8)) {
+                context.globalLib = FALSE;
+            } else {
+                printError("Sorry, but the especified argument don't exist. Use -help -cmp", CMP_INVALID_ARGUMENT);
             }
-
-            context.assemblyType = convertToAssemblyEnum(argv[i + 1]);
-            i++;
-        } else if (STR_N_EQUALS(argv[i], "-extra", 7)) {
-            context.showExtraInfo = TRUE;
-        } else if (STR_N_EQUALS(argv[i], "-logfile", 9)) {
-            context.createLogFile = TRUE;
-        } else if (STR_N_EQUALS(argv[i], "-asmfile", 9)) {
-            context.makeExecutable = FALSE;
-        } else if (STR_N_EQUALS(argv[i], "-os", 4)) {
-            if (i + 1 >= argc) {
-                printError("Sorry, but you need to specify a os of argument '-os'", CMP_INVALID_OS_ARGUMENT_SYNTAX);
-            }
-
-            context.os = convertToOSEnum(argv[i + 1]);
-            i++;
         } else {
-            size_t size = strlen(argv[i]);
+            size_t size = strlen(arg_v[i]);
 
-            if (!isASCIIString(argv[i], size)) {
+            if (!isASCIIString(arg_v[i], size)) {
                 CMP_INVALID_FILE_ASCII;
             }
 
@@ -72,7 +82,7 @@ void compileFiles(int argc, char **argv){
 
             filev[filec] = malloc((size + 1) * sizeof(char));
 
-            strncpy(filev[filec], argv[i], size);
+            strncpy(filev[filec], arg_v[i], size);
 
             filec++;
         }
@@ -87,16 +97,16 @@ void compileFiles(int argc, char **argv){
     free(filev);
 }
 
-void showHelp(int argc, char *argv[]){
-    if (argc < 3) {
+void showHelp(int arg_c, char *arg_v[]){
+    if (arg_c < 3) {
         puts("Help menu: \n"
         "-c or -cmp OUTPUT INPUTS -> compile input files into executables\n"
         "    -asm asm -> compile to 'asm' assembly, use -help asm to show available assemblies");
     }
 }
 
-void compileFilesToNIR(int argc, char **argv) {
-    if (argc < 3) {
+void compileFilesToNIR(int arg_c, char **arg_v) {
+    if (arg_c < 3) {
         printError("Sorry, but the compiler need input files", NO_ARGUMENTS);
     }
 }
