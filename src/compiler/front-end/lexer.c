@@ -2,6 +2,7 @@
 
 #include "../../headers/error_codes.h"
 #include "../../headers/utils.h"
+#include "headers/token.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -28,6 +29,11 @@ Lexer* lx_create(FILE *file) {
     lexer->_char = lexer->buffer[0];
 
     return lexer;
+}
+
+void lx_free(Lexer *lexer) {
+    free(lexer);
+    lexer = NULL;
 }
 
 int lx_skip(Lexer *lexer) {
@@ -86,6 +92,57 @@ char lx_peek(Lexer *lexer) {
     fseek(lexer->file, oldCursor, SEEK_SET);
 
     return nextChar;
+}
+
+Token* lx_getNextToken(Lexer *lexer) {
+
+    if (!lx_skipBlank(lexer)) 
+        return tk_create(TOKEN_EOF);
+
+    if (isgraph(lexer->_char)) {
+        if (isdigit(lexer->_char)) 
+            return lx_getDigit(lexer);
+
+        if (isalpha(lexer->_char) || lexer->_char == '_')
+            return lx_getIdentifier(lexer);
+
+        if (lexer->_char == '\'')
+            return lx_getChar(lexer);
+
+        if (lexer->_char == '"')
+            return lx_getString(lexer);
+        
+        if (lexer->_char == '@')
+            return lx_getCompilerDirective(lexer);
+
+        if (lexer->_char == '$')
+            return lx_getAssemblerDirective(lexer);
+
+        return lx_getSymbol(lexer);
+    }
+
+    return tk_create(TOKEN_INVALID_TOKEN);
+}
+
+Token* lx_getDigit(Lexer *lexer) {
+    char *digits = calloc(1, sizeof(char));
+    size_t digits_s = 1;
+
+    digits[0] = lexer->_char;
+
+    lx_skip(lexer);
+
+    while (isdigit(lexer->_char)) {
+        digits_s++;
+
+        digits = realloc(digits, digits_s);
+
+        digits[digits_s - 1] = lexer->_char;
+
+        lx_skip(lexer);
+    }
+
+    return tk_create_op(TOKEN_INT_NUMBER, digits, digits_s)
 }
 
 void lPrint(char string[]) {
