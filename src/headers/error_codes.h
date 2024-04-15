@@ -31,6 +31,9 @@ enum EErrorCodes {
     //Lexer compiler phase
     LX_MEMORY_ALLOC_ERROR,
     LX_EMPTY_FILE_PASSED,
+    LX_INVALID_CHARACTER,
+    //Token
+    TK_MEMORY_ALLOC_ERROR,
 };
 
 #endif

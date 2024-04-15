@@ -96,6 +96,14 @@ RuneString* rs_convertTo(unsigned char charSequence[], size_t charSequenceSize) 
     return string;
 }
 
+void rs_free(RuneString *string) {
+    free(string->runeSequence);
+    string->runeSequence = NULL;
+
+    free(string);
+    string = NULL;
+}
+
 rune_t rt_convertTo(unsigned char charSequence[], size_t charSequenceSize, size_t *index) {
 
     rune_t rune = 0;
