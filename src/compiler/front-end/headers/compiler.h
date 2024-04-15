@@ -3,19 +3,19 @@
 
 #include <stdio.h>
 
-enum {
+enum EAssemblys {
     ASSEMBLY_X86_64,
     ASSEMBLY_X86,
     ASSEMBLY_ARM_V8,
     ASSEMBLY_ARM_V7,
 };
 
-enum {
+enum EOSs {
     OS_WINDOWS,
     OS_LINUX,
 };
 
-enum {
+enum ENCTFileTypes {
     FILE_SOURCE,
     FILE_NLIB,
     FILE_NIR,

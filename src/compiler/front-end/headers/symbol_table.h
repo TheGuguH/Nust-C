@@ -23,7 +23,6 @@ typedef struct {
 
 } Macro;
 
-
 typedef struct {
 
 } Variable;

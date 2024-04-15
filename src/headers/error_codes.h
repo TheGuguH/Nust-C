@@ -1,13 +1,13 @@
 #ifndef ERROR_CODES_H
 #define ERROR_CODES_H
 
-enum {
+enum EErrorCodes {
     NO_COMMAND = 1,
     INVALID_COMMAND,
     NO_ARGUMENTS,
     INVALID_ASSEMBLY,
     INVALID_OS,
-    //compile command
+    //Compile command
     CMP_NO_FILE_EXTENSION,
     CMP_NO_COMPILABLE_FILE,
     CMP_INVALID_FILE_FOR_THIS,
@@ -28,6 +28,9 @@ enum {
     UTF8_OVERLONG,
     UTF8_SURROGATE_PAIR,
     UTF8_AWAY_LIMITS,
+    //Lexer compiler phase
+    LX_MEMORY_ALLOC_ERROR,
+    LX_EMPTY_FILE_PASSED,
 };
 
 #endif

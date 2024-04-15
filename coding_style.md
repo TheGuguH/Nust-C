@@ -26,7 +26,7 @@ typedef struct {
 
 ### Structures
 
-Structure names (struct, union and enum) use PascalCase, with the exception of the enum which uses EPascalCase; the enum rarely has an associated name.
+Structure names (struct, union and enum) use PascalCase, with the exception of the enum which uses EPascalCase.
 
 ```c
 typedef struct {
@@ -37,7 +37,7 @@ typedef struct {
 ```
 
 Comments:
-- Structures that have an associated name must always be one with typedef.
+- Structures (with enum exception) that have an associated name must always be one with typedef. The associated name with enuns is just for better identification for what it is.
 - If the structure needs to have itself within it (as in a simple linked list), the name of the structure will be the same. Example:
 
 ```c

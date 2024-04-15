@@ -26,17 +26,6 @@ def double Sqrt(double radicand) {
     return result;
 }
 
-def double Ln(double argument) {
-    mut double result = argument;
-    mut double prev = 0;
-
-    while (Abs(prev - result) > EPSILON) {
-        prev = result;
-        double naturalExp = Exp(result);
-        result = result - ((naturalExp - argument) / naturalExp);
-    }
-}
-
 def double Exp(double expoent) {
     //TODO: use Taylor Series
 }
