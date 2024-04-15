@@ -18,6 +18,8 @@ typedef struct {
 
 Lexer* lx_create(FILE *file);
 
+void lx_free(Lexer *lexer);
+
 int lx_skip(Lexer *lexer);
 
 int lx_skipEmpty(Lexer *lexer);
@@ -28,15 +30,21 @@ char lx_peek(Lexer *lexer);
 
 Token* lx_getNextToken(Lexer *lexer);
 
+Token* lx_getDigit(Lexer *lexer);
+
+Token* lx_getIdentifier(Lexer *lexer);
+
+Token* lx_getChar(Lexer *lexer);
+
 Token* lx_getString(Lexer *lexer);
 
 Token* lx_getChar(Lexer *lexer);
 
-Token* lx_getIdentifier(Lexer *lexer);
-
 Token* lx_getCompilerDirective(Lexer *lexer);
 
 Token* lx_getAssemblerDirective(Lexer *lexer);
+
+Token* lx_getSymbol(Lexer *lexer);
 
 void lPrint(char string[]);
 
