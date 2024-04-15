@@ -1,9 +1,14 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <stdio.h>
+
 enum ETokenType {
     //Custom
-    TOKEN_NUMBER,              //nubers
+    TOKEN_EOF = -2,
+    TOKEN_INVALID_TOKEN,
+    TOKEN_INT_NUMBER,              //nubers
+    TOKEN_FLOAT_NUMBER,
     TOKEN_IDENTIFIER,          //names
     //Symbols
     TOKEN_LEFT_PARENTHESE,     //(
@@ -28,10 +33,15 @@ enum ETokenType {
 
 typedef struct {
     char *value;
+    size_t value_s;
     int type;
 } Token;
 
-Token* tk_create(int type, char value[]);
+Token* tk_create(int type);
+
+Token* tk_create_op(int type, char value[], size_t value_s);
+
+void tk_free(Token *token);
 
 void tPrintError(char string[], int errorCode);
 

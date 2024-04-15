@@ -70,6 +70,8 @@ void rt_println(rune_t rune);
 
 RuneString* rs_convertTo(unsigned char charSequence[], size_t charSequenceSize);
 
+void rs_free(RuneString *string);
+
 rune_t rt_convertTo(unsigned char charSequence[], size_t charSequenceSize, size_t *index);
 
 #endif
