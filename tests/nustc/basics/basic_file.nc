@@ -1,15 +1,8 @@
-namespace tests::lexer
+namespace std::io
 
-use std::io //Just for lexer test
+def int Main(string[] args) {
 
-//some comment...
-def int Main(string args[]) {
+    $__PRINT_A_STRING__(args[0])
 
-    $__PRINT_A_STRING__(arg[0])
-    //Print(arg[0]);
     return 0;
 }
-
-/*
-    Hi i'm a multiline comment block!
-*/

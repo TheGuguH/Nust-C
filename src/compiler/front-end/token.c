@@ -5,20 +5,21 @@
 
 #include <stdio.h>
 
-Token* tk_create(int type) {
-    return tk_create_op(type, "", 1);
+Token* tk_create(int type, size_t line) {
+    return tk_create_op(type, line, "", 1);
 }
 
-Token* tk_create_op(int type, char value[], size_t value_s) {
+Token* tk_create_op(int type, size_t line, char value[], size_t value_s) {
     Token *token = malloc(sizeof(Token));
 
     if (token == NULL) {
-        tPrintError("error on memory allocation for a token", TK_MEMORY_ALLOC_ERROR);
+        tPrintError("can't alloc memory for a token", TK_MEMORY_ALLOC_ERROR);
     }
 
     token->type = type;
     token->value = value;
     token->value_s = value_s;
+    token->line = line;
 
     return token;
 }
