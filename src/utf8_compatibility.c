@@ -1,6 +1,7 @@
 #include "headers/utf8_compatibility.h"
 
 #include "headers/error_codes.h"
+#include "headers/utils.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -39,10 +40,6 @@ const uint32_t UTF_8_LIMIT = 0xF48FBFBF;
     We call the converted char a rune.
 */
 
-/*
-    We need a function to return a RuneString based on a character sequence
-*/
-
 void rt_print(rune_t rune) {
     unsigned char *runeBytes = (unsigned char*)&rune;
 
@@ -61,39 +58,49 @@ void rt_println(rune_t rune) {
     printf("\n");
 }
 
-RuneString* rs_convertTo(unsigned char charSequence[], size_t charSequenceSize) {
+RuneString* rs_create() {
     RuneString *string = malloc(sizeof(RuneString));
 
     if (string == NULL) {
-        puts("error on trying to alloc memory for a RuneString");
-        exit(UTF8_ALLOC_ERROR);
+        uPrintError("can't alloc memory for a rune string", UTF8_ALLOC_ERROR);
     }
 
-    string->runeSequence = calloc(1, sizeof(rune_t));
+    string->runeSequence = malloc(sizeof(rune_t));
 
     if (string->runeSequence == NULL) {
-        puts("error on trying to alloc memory for runeSequence of a RuneString");
-        exit(UTF8_ALLOC_SEQUENCE_ERROR);
+        uPrintError("can't realloc memory for a rune sequence", UTF8_ALLOC_SEQUENCE_ERROR);
     }
 
-    for (size_t i = 0; i < charSequenceSize; i++) {
-
-        rune_t rune = rt_convertTo(charSequence, charSequenceSize, &i);
-
-        string->runeQuantity++;
-
-        string->runeSequence = realloc(string->runeSequence, sizeof(rune_t) * string->runeQuantity);
-
-        if (string->runeSequence == NULL) {
-
-            puts("error on trying to realloc memory for more capacity of runeSequence for a RuneString");
-            exit(UTF8_REALLOC_SEQUENCE_ERROR);
-        }
-
-        string->runeSequence[string->runeQuantity - 1] = rune;
-    }
+    string->runeQuantity = 0;
 
     return string;
+}
+
+void rs_add(RuneString *string, rune_t rune) {
+    string->runeSequence = realloc(string->runeSequence, string->runeQuantity + 1);
+
+    if (string->runeSequence == NULL) {
+        uPrintError("error on trying to realloc memory for runeSequence of a RuneString", UTF8_REALLOC_SEQUENCE_ERROR);
+    }
+    
+    string->runeSequence[string->runeQuantity] = rune;
+
+    string->runeQuantity++;
+}
+
+void rs_addChar(RuneString *string, char _chars[], size_t _chars_s) {
+
+    rune_t rune = rt_create(_chars, _chars_s);
+
+    string->runeSequence = realloc(string->runeSequence, string->runeQuantity + 1);
+
+    if (string->runeSequence == NULL) {
+        uPrintError("error on trying to realloc memory for runeSequence of a RuneString", UTF8_REALLOC_SEQUENCE_ERROR);
+    }
+    
+    string->runeSequence[string->runeQuantity] = rune;
+
+    string->runeQuantity++;
 }
 
 void rs_free(RuneString *string) {
@@ -104,75 +111,127 @@ void rs_free(RuneString *string) {
     string = NULL;
 }
 
-rune_t rt_convertTo(unsigned char charSequence[], size_t charSequenceSize, size_t *index) {
+char* rs_converToString(RuneString *_runeString) {
+    char string_s = _runeString->runeQuantity * 4;
+    char *string = calloc(string_s, sizeof(char));
+
+    for (size_t i = 0; i < _runeString->runeQuantity; i++) {
+        char *bytes = (char*)&_runeString->runeSequence[i];
+
+        for (size_t j = 0; i < 4; i++) {
+            string[i * 4 + j] = bytes[j];
+        }
+    }
+
+    return string;
+}
+
+rune_t rt_create(char _chars[], size_t _chars_s) {
+#define VERIFY_LENGHT(size)        if (_chars_s != size) \
+            uPrintError("invalid lenght for this UTF-8 character", UTF8_INVALID_LENGHT); \
+
+#define VERIFY_CONTINUATION_BYTE(index)       if ((_chars[index] & CONTINUATION_VERIFY_BYTE) != CONTINUATION_BYTE) { \
+            uPrintError("one of bytes of a UTF-8 char ins't a continuation byte", UTF8_NO_CONTINUATION_BYTE); \
+        } \
+
+#define VERIFY_OVERLONG(minimum) if (rune < minimum) { \
+            uPrintError("trying to make overlong", UTF8_OVERLONG); \
+        } \
 
     rune_t rune = 0;
 
-    if (charSequence[*index] <= ASCII_LIMIT){
-        rune = charSequence[*index];
-        
-        return rune;
+    switch (charUTF8Lenght(_chars[0])) {
+        case 1:
+            VERIFY_LENGHT(1);
+
+            rune = _chars[0];
+        break;
+        case 2:
+            VERIFY_LENGHT(2);
+
+            VERIFY_CONTINUATION_BYTE(1);
+
+            rune |= _chars[0];
+            rune <<= 8;
+
+            rune |= _chars[1];
+
+            VERIFY_OVERLONG(BYTE_2_MINIMUM);
+        break;
+        case 3:
+            VERIFY_LENGHT(2);
+
+            VERIFY_CONTINUATION_BYTE(1);
+            VERIFY_CONTINUATION_BYTE(2);
+
+            rune |= _chars[0];
+            rune <<= 8;
+
+            rune |= _chars[1];
+            rune <<= 8;
+
+            rune |= _chars[2];
+
+            VERIFY_OVERLONG(BYTE_3_MINIMUM);
+        break;
+        case 4:
+            VERIFY_LENGHT(2);
+
+            VERIFY_CONTINUATION_BYTE(1);
+            VERIFY_CONTINUATION_BYTE(2);
+            VERIFY_CONTINUATION_BYTE(3);
+
+            rune |= _chars[0];
+            rune <<= 8;
+
+            rune |= _chars[1];
+            rune <<= 8;
+
+            rune |= _chars[2];
+            rune <<= 8;
+
+            rune |= _chars[3];
+
+            VERIFY_OVERLONG(BYTE_4_MINIMUM);
+        break;
+        default:
+            uPrintError("trying to represent a non UTF-8 char", UTF8_INVALID_CHARACTER);
+        break;
     }
 
-    VERIFT_INDEX_LIMIT(0);
-
-    if ((charSequence[*index] & UTF_2_BYTE_LENGHT_VERIFY_BYTE) == UTF_2_BYTE_LENGHT_BYTE) { //is 2 byte-utf character lenght?
-        VERIFT_INDEX_LIMIT(1);
-
-        VERIFY_CONTINUATION_BYTE(1);
-
-        SET_RUNE_T_BYTE(rune, '\0', '\0', charSequence[*index], charSequence[*index + 1]);
-
-        *index += 1;
-
-        VERIFY_LIMIT(rune, BYTE_2_MINIMUM);
-
-    } else if ((charSequence[*index] & UTF_3_BYTE_LENGHT_VERIFY_BYTE) == UTF_3_BYTE_LENGHT_BYTE) { //is 3 byte-utf character lenght?
-        VERIFT_INDEX_LIMIT(2);
-
-        VERIFY_CONTINUATION_BYTE(1);
-        VERIFY_CONTINUATION_BYTE(2);
-
-        SET_RUNE_T_BYTE(rune, '\0', charSequence[*index], charSequence[*index + 1], charSequence[*index + 2]);
-
-        *index += 2;
-
-        VERIFY_LIMIT(rune, BYTE_3_MINIMUM);
-
-    } else if ((charSequence[*index] & UTF_4_BYTE_LENGHT_VERIFY_BYTE) == UTF_4_BYTE_LENGHT_BYTE) { //is 4 byte-utf character lenght?
-        VERIFT_INDEX_LIMIT(3);
-
-        VERIFY_CONTINUATION_BYTE(1);
-        VERIFY_CONTINUATION_BYTE(2);
-        VERIFY_CONTINUATION_BYTE(3);
-
-        SET_RUNE_T_BYTE(rune, charSequence[*index], charSequence[*index + 1], charSequence[*index + 2], charSequence[*index + 3]);
-
-        *index += 3;
-
-        VERIFY_LIMIT(BYTE_4_MINIMUM, rune); //By a unknown behavior, the inversion of datas
-
-        if (rune < UTF_START_SURROGATE_PAIRS && rune > UTF_END_SURROGATE_PAIRS) {
-            puts("trying to represent a surrogate pair");
-            exit(UTF8_SURROGATE_PAIR);
-        }
-
-        if (rune < UTF_8_LIMIT) {
-            puts("trying to represent over the UTF-8 limit");
-            exit(UTF8_AWAY_LIMITS);
-        }
-
-        return rune;
-
-    } else { //not a UTF-8 character!
-        puts("A \"character\" to verify is not a UTF-8 character");
-        exit(UTF8_INVALID_CHARACTER);
+    if (rune > UTF_8_LIMIT) {
+        uPrintError("trying to represent over the UTF-8 limit", UTF8_AWAY_LIMITS);
     }
 
-    if (rune > UTF_START_SURROGATE_PAIRS && rune < UTF_END_SURROGATE_PAIRS) {
-        puts("trying to represent a surrogate pair");
-        exit(UTF8_SURROGATE_PAIR);
+    if (rune >= UTF_START_SURROGATE_PAIRS && rune <= UTF_END_SURROGATE_PAIRS) {
+        uPrintError("trying to represent a surrogate pair", UTF8_SURROGATE_PAIR);
     }
 
     return rune;
+}
+
+int charUTF8Lenght(unsigned char _char) {
+    if (_char <= ASCII_LIMIT){
+        return 1;
+
+    } else if ((_char & UTF_2_BYTE_LENGHT_VERIFY_BYTE) == UTF_2_BYTE_LENGHT_BYTE) { //is 2 byte-utf character lenght?
+        return 2;
+
+    } else if ((_char & UTF_3_BYTE_LENGHT_VERIFY_BYTE) == UTF_3_BYTE_LENGHT_BYTE) { //is 3 byte-utf character lenght?
+        return 3;
+
+    } else if ((_char & UTF_4_BYTE_LENGHT_VERIFY_BYTE) == UTF_4_BYTE_LENGHT_BYTE) { //is 4 byte-utf character lenght?
+        return 4;
+
+    } else { //not a UTF-8 character!
+        return 0;
+    }
+}
+
+void uPrint(char string[]) {
+    printf("[UTF-8]: %s\n", string);
+}
+
+void uPrintError(char string[], int errorCode) {
+    P_ERROR_FORMAT("[UTF-8]: ");
 }
