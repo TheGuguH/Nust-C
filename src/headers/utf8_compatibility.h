@@ -42,36 +42,28 @@ extern const uint32_t UTF_START_SURROGATE_PAIRS;
 extern const uint32_t UTF_END_SURROGATE_PAIRS; 
 extern const uint32_t UTF_8_LIMIT; 
 
-#define VERIFT_INDEX_LIMIT(limit)        if (charSequenceSize < (*index) + limit) { \
-            puts("invalid index size for this UTF-8 character lenght"); \
-            exit(UTF8_INVALID_INDEX_SIZE); \
-        } \
+RuneString* rs_create();
 
-#define VERIFY_CONTINUATION_BYTE(extra_index)       if ((charSequence[*index + extra_index] & CONTINUATION_VERIFY_BYTE) != CONTINUATION_BYTE) { \
-            puts("a byte of a \"character\" ins't a continuation byte"); \
-            exit(UTF8_NO_CONTINUATION_BYTE); \
-        } \
+void rs_free(RuneString *string);
 
-#define SET_RUNE_T_BYTE(rune, first_value, second_value, third_value, fourth_value) unsigned char *runeBytes = (unsigned char*)&rune; \
- \
-        runeBytes[0] = first_value; \
-        runeBytes[1] = second_value; \
-        runeBytes[2] = third_value; \
-        runeBytes[3] = fourth_value; \
+void rs_add(RuneString *string, rune_t rune);
 
-#define VERIFY_LIMIT(rune, limit)        if (rune < limit) { \
-            puts("overlong of trying a representation of a UTF-8 character"); \
-            exit(UTF8_OVERLONG); \
-        } \
+void rs_addChar(RuneString *string, char _chars[], size_t _chars_s);
+
+char* rs_converToString(RuneString *_runeString);
+
+rune_t rt_create(char _chars[], size_t _chars_s);
+
+char* rt_convertToChar(rune_t rune);
 
 void rt_print(rune_t rune);
 
 void rt_println(rune_t rune);
 
-RuneString* rs_convertTo(unsigned char charSequence[], size_t charSequenceSize);
+int charUTF8Lenght(unsigned char _char);
 
-void rs_free(RuneString *string);
+void uPrint(char string[]);
 
-rune_t rt_convertTo(unsigned char charSequence[], size_t charSequenceSize, size_t *index);
+void uPrintError(char string[], int errorCode);
 
 #endif

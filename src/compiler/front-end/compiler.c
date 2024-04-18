@@ -1,5 +1,7 @@
 #include "headers/compiler.h"
 
+#include "headers/lexer.h"
+#include "headers/token.h"
 #include "../../headers/error_codes.h"
 #include "../../headers/utils.h"
 
@@ -45,7 +47,13 @@ void startCompiling(size_t file_c, char *file_v[], CompilerContext context) {
 
     }
 
-    
+    Lexer *lexer = lx_create(files[0].file);
+    Token *tk;
+    printf("<%lu>\n", lexer->buffer_s);
+
+    while ((tk = lx_getNextToken(lexer))->type != TOKEN_EOF && tk->type != TOKEN_INVALID_TOKEN) {
+        printf("<%d, %s, %lu, %lu>\n", tk->type, tk->value, tk->value_s, tk->line);
+    }
 }
 
 int isSourceFile(char file[]) {

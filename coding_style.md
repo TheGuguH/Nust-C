@@ -124,9 +124,9 @@ When used as a variable, use the '*' before the name, but attached. In this case
 void *stringLocation;
 ```
 
-#### As a return:
+#### As a return or type:
 
-When used as a return, the '*' is used after the type, but attached. Because in this case the return is the pointer. Example:
+When used as a return or type, the '*' is used after the type, but attached. Because in this case the return is the pointer. Example:
 
 ```c
 rune_t* convertToRune(char[] characterString) {
@@ -181,7 +181,7 @@ void startDrawing() {
 Instruction block suffixes are to indicate additional behavior on that instruction block.
 
 - **_op**:
-     It means that this instruction block has optional arguments, and that calling this function without this suffix will not need to specify these arguments. Example:
+     It means that this instruction block has optional arguments, and that calling this instruction block without this suffix will not need to specify these arguments. Example:
 
 ```c
 double v2_getRotation(Vector2D vector) {
@@ -227,7 +227,10 @@ enum {
      TRUE,
 };
 ```
+
 Note: **ALWAYS** after an enum value there is a ','.
+
+In multi-line Macro definition, always use '\' in last instruction
 
 ## Syntax
 
@@ -261,7 +264,7 @@ void startDrawing(int anthropicBlurLevel, Color backgroundColor) {
 }
 ```
 
-If-else inversion is used when there is a lot of if nested in a function
+If-else inversion is used when there is a lot of if nested in an instruction block
 
 ### If-else, loops and switch-case
 
@@ -272,6 +275,18 @@ if (1 == 1) {
      return 10;
 }
 ```
+
+In the **case** of **switch**, the break always has the same indentation as the **case**, but the case code ALWAYS has to have a more advanced indentation. Example:
+
+```c
+switch (fooInt) {
+     case 10:
+         return "the user input is invalid";
+     break;
+}
+```
+
+Another notation is that the return should NEVER replace the break, that is, even if a return acts, the break at the end is necessary.
 
 ### White spaces
 
@@ -289,7 +304,9 @@ int main() {
 
 ### Tabulation
 
-Never use tabs, use 4 spaces instead
+Never use tabs, use 4 spaces instead.
+
+The indentation is always 4 spaces. When we say that the indentation is larger, it means that it has a greater number of spaces; when we say that the indentation advances, it means that it increases 4 spaces; when we say that the indentation retracts or retreats, it means it decreases 4 spaces; When we say it is smaller, it means it has a smaller number of spaces
 
 ## Includes
 
@@ -344,7 +361,7 @@ The next includes (also separated by a blank line) are the standard C libs, alwa
 
 ### Definition of constants and structures
 
-Structures, macros (#define) and typedef must be declared in their header (.h) file, rather than in the source code (.c) directly.
+Structures, macros for global or multi-instruction blocks use within the file (#define) and typedef must be declared in their header (.h) file, rather than in the source code (.c) directly.
 
 Note that we prefer to use macros rather than generic instruction blocks that never change or that change one word or another, like variable types. Example:
 
@@ -371,3 +388,5 @@ macros
 
 declaration of structure blocks
 ```
+
+When a macro is used only within a instruction block, that macro must be located within that block, or above, and not in the header.
