@@ -10,11 +10,36 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define LX_SKIPED if (lx_skip(lexer) == 0) \
+            lPrintError("early EOF", LX_EARLY_EOF, lexer->line); \
+
+#define LX_SKIPED_OP(text) if (lx_skip(lexer) == 0) \
+            lPrintError("early EOF, " #text, LX_EARLY_EOF, lexer->line); \
+
+#define LX_GET_BASE(sequence, token, verify) char *sequence = calloc(1, sizeof(char)); \
+    size_t sequence##_s = 1; \
+ \
+    sequence[0] = lexer->_char; \
+ \
+    LX_SKIPED; \
+ \
+    while (verify) { \
+        sequence##_s++; \
+ \
+        sequence = realloc(sequence, sequence##_s); \
+ \
+        sequence[sequence##_s - 1] = lexer->_char; \
+ \
+        LX_SKIPED; \
+    } \
+ \
+    return tk_create_op(token, lexer->line, sequence, sequence##_s); \
+
 Lexer* lx_create(FILE *file) {
     Lexer *lexer = malloc(sizeof(Lexer));
 
     if (lexer == NULL) {
-        lPrintError("can't alloc memory for a lexer", LX_MEMORY_ALLOC_ERROR);
+        lPrintError("can't alloc memory for a lexer", LX_MEMORY_ALLOC_ERROR, 0);
     }
 
     lexer->file = file;
@@ -24,7 +49,7 @@ Lexer* lx_create(FILE *file) {
     lexer->buffer_s = fread(lexer->buffer, 1, BUFFER_SIZE, lexer->file);
 
     if (lexer->buffer_s <= 0) {
-        lPrintError("a totally empty file founded", LX_EMPTY_FILE_PASSED);
+        lPrintError("a totally empty file founded", LX_EMPTY_FILE_PASSED, 0);
     }
 
     lexer->_char = lexer->buffer[0];
@@ -59,14 +84,18 @@ int lx_skip(Lexer *lexer) {
 
         lexer->_char = lexer->buffer[0];
 
-        if (lexer->buffer_s == 0)
+        if (lexer->buffer_s == 0) {
+            lexer->_char = EOF;
             return 0;
+        }
     } else {
         lexer->_char = lexer->buffer[lexer->bufferCursor];
     }
 
-    if (feof(lexer->file) == 0)
+    if (feof(lexer->file) == 0) {
+        lexer->_char = EOF;
         return 0;
+    }
 
     return 1;
 }
@@ -134,10 +163,20 @@ char lx_peek(Lexer *lexer) {
 }
 
 Token* lx_getNextToken(Lexer *lexer) {
-
     if (lx_skipEmpty(lexer) == 0) 
         return tk_create(TOKEN_EOF, lexer->line);
 
+    return lx_identifyToken(lexer);
+}
+
+Token* lx_getNextTokenInSameLine(Lexer *lexer) {
+    if (lx_skipBlank(lexer) == 0) 
+        return tk_create(TOKEN_EOF, lexer->line);
+
+    return lx_identifyToken(lexer);
+}
+
+Token* lx_identifyToken(Lexer *lexer) {
     if (isgraph(lexer->_char)) {
 
         if (lexer->_char == '/') {
@@ -175,11 +214,53 @@ Token* lx_getDigit(Lexer *lexer) {
 }
 
 Token* lx_getIdentifier(Lexer *lexer) {
-    LX_GET_BASE(identifier, lx_getKeywordType(lexer, identifier, identifier_s), isalnum(lexer->_char));
+    LX_GET_BASE(identifier, lx_getKeywordType(identifier, identifier_s), isalnum(lexer->_char));
 }
 
 Token* lx_getChar(Lexer *lexer) {
-    LX_GET_BASE(_char, TOKEN_CHAR_LITERAL, isdigit(lexer->_char));
+    rune_t _char = '\0';
+
+    LX_SKIPED_OP("invalid char");
+
+    _char =~ _char;
+
+    char string[] = {'\0', '\0', '\0', '\0'};
+
+    string[0] = lexer->_char;
+
+    int charProbalySize = charUTF8Lenght(string[0]);
+    
+    switch (lexer->_char) {
+        case '\'':
+            LX_SKIPED;
+            return tk_create_op(TOKEN_CHAR_LITERAL, lexer->line, (char*)&_char, 4);
+        break;
+        case '\\':
+            _char = lx_convertScapeSequence(lexer);
+        break;
+        default:
+            for (int i = 1; i < charProbalySize; i++) {
+
+                LX_SKIPED_OP("invalid charr");
+
+                string[i] = lexer->_char;
+
+                if (lexer->_char == '\'') 
+                    lPrintError("invalid character of a char", LX_INVALID_CHAR, lexer->line);
+            }
+
+            _char = rt_create((unsigned char*)&string, charProbalySize);
+
+            LX_SKIPED;
+        break;
+    }
+
+    if (lexer->_char != '\'')
+        lPrintError("invalid format of a char", LX_INVALID_CHAR_FORMAT, lexer->line);
+
+    LX_SKIPED;
+
+    return tk_create_op(TOKEN_CHAR_LITERAL, lexer->line, (char *)&_char, sizeof(rune_t));
 }
 
 Token* lx_getString(Lexer *lexer) {
@@ -187,21 +268,40 @@ Token* lx_getString(Lexer *lexer) {
 
     RuneString *_runeString = rs_create();
 
-    LX_SKIPED_OP("string don't have a end");;
+    LX_SKIPED_OP("invalid string");;
 
     while (lexer->_char != '"') {
-        
-        string[0] = lexer->_char;
+        for (int i = 0; i < 4; i++) {
+            string[i] = '\0';
+        }
 
         if (lexer->_char == '\\') {
             rs_add(_runeString, lx_convertScapeSequence(lexer));
             continue;
         }
 
+        string[0] = lexer->_char;
+
+        int charProbalySize = charUTF8Lenght(string[0]);
+
+        for (int i = 1; i < charProbalySize; i++) {
+
+            LX_SKIPED_OP("invalid string");
+
+            string[i] = lexer->_char;
+
+            if (lexer->_char == '"') 
+                lPrintError("invalid character of a string", LX_INVALID_CHARACTER, lexer->line);
+        }
+
+        rs_addChar(_runeString, string, charProbalySize);
+
         LX_SKIPED;
     }
 
-    return tk_create_op(TOKEN_STRING_LITERAL, lexer->line, rs_converToString(_runeString), _runeString->runeQuantity * 4);
+    LX_SKIPED;
+
+    return tk_create_op(TOKEN_STRING_LITERAL, lexer->line, rs_convertToString(_runeString), _runeString->runeQuantity * 4);
 }
 
 Token* lx_getCompilerDirective(Lexer *lexer) {
@@ -218,11 +318,43 @@ Token* lx_getSymbol(Lexer *lexer) {
             return tk_create(token, lexer->line); \
 
     switch (lexer->_char) {
+        case '!':
+            RETURN_AND_SKIP(TOKEN_NOT);
+        break;
+        case '%':
+            RETURN_AND_SKIP(TOKEN_REST);
+        break;
+        case '&':
+            lx_skip(lexer);
+
+            if (lexer->_char == '&') {
+                lx_skip(lexer);
+                return tk_create(TOKEN_AND, lexer->line);
+            }
+            if (lexer->_char == '=') {
+                lx_skip(lexer);
+                return tk_create(TOKEN_AND, lexer->line);
+            }
+
+            return tk_create(TOKEN_BITW_AND, lexer->line);
+        break;
         case '(':
             RETURN_AND_SKIP(TOKEN_LEFT_PARENTHESE);
         break;
         case ')':
             RETURN_AND_SKIP(TOKEN_RIGHT_PARENTHESE);
+        break;
+        case '*':
+            RETURN_AND_SKIP(TOKEN_ASTERISK);
+        break;
+        case '+':
+            RETURN_AND_SKIP(TOKEN_PLUS); 
+        break;
+        case '-':
+            RETURN_AND_SKIP(TOKEN_PLUS);
+        break;
+        case '/':
+            RETURN_AND_SKIP(TOKEN_SLASH);
         break;
         case ',':
             RETURN_AND_SKIP(TOKEN_COMMA);
@@ -231,7 +363,7 @@ Token* lx_getSymbol(Lexer *lexer) {
             LX_SKIPED_OP("the character ':' need always an other character after it");
 
             if (lexer->_char == ':') {
-                LX_SKIPED_OP("the character '::' need always an other character after it");
+                lx_skip(lexer);
                 return tk_create(TOKEN_DOUBLE_COLON, lexer->line);
             }
 
@@ -240,8 +372,23 @@ Token* lx_getSymbol(Lexer *lexer) {
         case ';':
             RETURN_AND_SKIP(TOKEN_SEMICOLON);
         break;
+        case '<':
+            RETURN_AND_SKIP(TOKEN_LESS_THAN);
+        break;
+        case '=':
+            RETURN_AND_SKIP(TOKEN_EQUALS);
+        break;
+        case '>':
+            RETURN_AND_SKIP(TOKEN_GREATER_THAN);
+        break;
+        case '?':
+            RETURN_AND_SKIP(TOKEN_QUESTION_MARK);
+        break;
         case '[':
             RETURN_AND_SKIP(TOKEN_LEFT_BRACKET);
+        break;
+        case '\\':
+            RETURN_AND_SKIP(TOKEN_BACK_SLASH);
         break;
         case ']':
             RETURN_AND_SKIP(TOKEN_RIGHT_BRACKET);
@@ -261,212 +408,128 @@ rune_t lx_convertScapeSequence(Lexer *lexer) {
 
 #define LX_SKIP_VERIFY_INVALID_SSEQUENCE LX_SKIPED_OP("invalid scape sequence")
 
+#define SET_HEXA_SCAPE(index0, index1) hexaChars[index0] = lexer->_char; \
+                        LX_SKIP_VERIFY_INVALID_SSEQUENCE; \
+                        hexaChars[index1] = lexer->_char; \
+                        LX_SKIP_VERIFY_INVALID_SSEQUENCE; \
+
     rune_t rune;
 
     LX_SKIP_VERIFY_INVALID_SSEQUENCE;
 
     switch (lexer->_char) {
         case '"':
-            return (rune_t)'"';
+            rune = (rune_t)'"';
         break;
         case '\'':
-            return (rune_t)'\'';
+            rune = (rune_t)'\'';
         break;
         case '0':
-            return (rune_t)'\0';
+            rune = (rune_t)'\0';
         break;
         case '?':
-            return (rune_t)'\?';
+            rune = (rune_t)'\?';
         break;
         case 'A':
         case 'a':
-            return (rune_t)'\a';
+            rune = (rune_t)'\a';
         break;
         case 'B':
         case 'b':
-            return (rune_t)'\b';
+            rune = (rune_t)'\b';
         break;
         case 'F':
         case 'f':
-            return (rune_t)'\f';
+            rune = (rune_t)'\f';
         break;
         case 'N':
         case 'n':
-            return (rune_t)'\n';
+            rune = (rune_t)'\n';
         break;
         case 'R':
         case 'r':
-            return (rune_t)'\r';
+            rune = (rune_t)'\r';
         break;
         case 'T':
         case 't':
-            return (rune_t)'\t';
+            rune = (rune_t)'\t';
         break;
         case 'V':
         case 'v':
-            return (rune_t)'\v';
+            rune = (rune_t)'\v';
         break;
         case 'X':
         case 'x':
             LX_SKIP_VERIFY_INVALID_SSEQUENCE;
 
-            //TODO: repart the code for more modular way
+            char hexaChars[8] = {'0', '0', '0', '0', '0', '0', '0', '0'};
 
             if (lexer->_char == 'x') {
                 LX_SKIP_VERIFY_INVALID_SSEQUENCE;
+
                 if (lexer->_char == 'x') {
                     LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-
                     if (lexer->_char == 'x') {
                         LX_SKIP_VERIFY_INVALID_SSEQUENCE;
 
-                        if (lexer->_char == 'x')
-                            lPrintError("invalid hexadecimal format", LX_HEXA_BAD_FORMAT);
-
-                        char oldChars1Hexa[2];
-
-                        oldChars1Hexa[0] = lexer->_char;
-
-                        LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                        oldChars1Hexa[1] = lexer->_char;
-
-                        char oldChars2Hexa[2];
-
-                        LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                        oldChars2Hexa[0] = lexer->_char;
-
-                        LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                        oldChars2Hexa[1] = lexer->_char;
-
-                        char oldChars3Hexa[2];
-
-                        LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                        oldChars3Hexa[0] = lexer->_char;
-
-                        LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                        oldChars3Hexa[1] = lexer->_char;
-
-                        char oldChars4Hexa[2];
-
-                        LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                        oldChars4Hexa[0] = lexer->_char;
-
-                        LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                        oldChars4Hexa[1] = lexer->_char;
-
-                        uint8_t value[4];
-                        value[0] = charToHexa(oldChars1Hexa, 2);
-                        value[1] = charToHexa(oldChars2Hexa, 2);
-                        value[2] = charToHexa(oldChars3Hexa, 2);
-                        value[3] = charToHexa(oldChars4Hexa, 2);
-
-                        rune = value[0];
-                        rune <<= 8;
-
-                        rune = value[1];
-                        rune <<= 8;
-
-                        rune = value[2];
-                        rune <<= 8;
-                        
-                        rune |= value[3];
-
-                        return rune;
+                        SET_HEXA_SCAPE(0, 1);
                     }
 
-                    char oldChars1Hexa[2];
-
-                    oldChars1Hexa[0] = lexer->_char;
-
-                    LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                    oldChars1Hexa[1] = lexer->_char;
-
-                    char oldChars2Hexa[2];
-
-                    LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                    oldChars2Hexa[0] = lexer->_char;
-
-                    LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                    oldChars2Hexa[1] = lexer->_char;
-
-                    char oldChars3Hexa[2];
-
-                    LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                    oldChars3Hexa[0] = lexer->_char;
-
-                    LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                    oldChars3Hexa[1] = lexer->_char;
-
-                    uint8_t value[3];
-                    value[0] = charToHexa(oldChars1Hexa, 2);
-                    value[1] = charToHexa(oldChars2Hexa, 2);
-                    value[2] = charToHexa(oldChars3Hexa, 2);
-
-                    rune = value[0];
-                    rune <<= 8;
-
-                    rune = value[1];
-                    rune <<= 8;
-                    
-                    rune |= value[2];
-
-                    return rune;
+                    SET_HEXA_SCAPE(2, 3);
                 }
 
-                LX_SKIP_VERIFY_INVALID_SSEQUENCE;
+                SET_HEXA_SCAPE(4, 5);
+            }
+            SET_HEXA_SCAPE(6, 7);
 
-                char oldChars1Hexa[2];
-
-                oldChars1Hexa[0] = lexer->_char;
-
-                LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                oldChars1Hexa[1] = lexer->_char;
-
-                char oldChars2Hexa[2];
-
-                LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                oldChars2Hexa[0] = lexer->_char;
-
-                LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                oldChars2Hexa[1] = lexer->_char;
-
-                uint8_t value[2];
-                value[0] = charToHexa(oldChars1Hexa, 2);
-                value[1] = charToHexa(oldChars2Hexa, 2);
-
-                rune = value[0];
-                rune <<= 8;
-                
-                rune |= value[1];
-
-                return rune;
-            } 
-
-            char oldChar = lexer->_char;
-
-            LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-
-            char _chars[2] = {oldChar, lexer->_char};
-
-            uint8_t value = charToHexa(_chars, 2);
-
-            rune = value;
+            rune = (rune_t)hexaToRune(hexaChars, 8, lexer->line);
 
             return rune;
         break;
         case '\\':
-            return (rune_t)'\a';
+            rune = (rune_t)'\\';
+        break;
+        default:
+            lPrintError("can't identify the scape sequence", LX_CANT_GET_SSEQUENCE, lexer->line);
         break;
     }
 
-    lPrintError("can't identify the scape sequence", LX_CANT_GET_SSEQUENCE);
+    LX_SKIPED;
 
     return rune;
 }
 
-uint8_t charToHexa(char _chars[], size_t _chars_s) {
+uint32_t hexaToRune(char _chars[], size_t _chars_s, size_t line) {
+    if (_chars_s != 8)
+        lPrintError("invalid hexadecimal format", LX_HEXA_BAD_FORMAT, line);
+
+    uint8_t values[4] = {0, 0, 0, 0};
+
+    for (int i = 0; i < 4; i++) {
+        char hexaChars[] = {_chars[i * 2], _chars[(i * 2) + 1]};
+        values[i] = hexaToValue(hexaChars, 2, line);
+    }
+
+    uint32_t returnValue = values[0];
+
+    returnValue <<= 8;
+
+    returnValue |= values[1];
+
+    returnValue <<= 8;
+
+    returnValue |= values[2];
+
+    returnValue <<= 8;
+
+    returnValue |= values[3];
+
+    return returnValue;
+}
+
+uint8_t hexaToValue(char _chars[], size_t _chars_s, size_t line) {
     if (_chars_s != 2)
-        lPrintError("invalid hexadecimal format", LX_HEXA_BAD_FORMAT);
+        lPrintError("invalid hexadecimal format", LX_HEXA_BAD_FORMAT, line);
 
     uint8_t value[2] = {0, 0};
     
@@ -478,25 +541,33 @@ uint8_t charToHexa(char _chars[], size_t _chars_s) {
         else if (_chars[i] >= 'A' && _chars[i] <= 'F')
             value[i] = _chars[i] - 'A' + 10;
         else 
-            lPrintError("invalid hexadecimal format", LX_HEXA_BAD_FORMAT);
+            lPrintError("invalid hexadecimal format", LX_HEXA_BAD_FORMAT, line);
     }
 
     uint8_t returnValue = value[0];
 
     returnValue <<= 4;
-
+    
     returnValue |= value[1];
 
     return returnValue;
 }
 
-int lx_getKeywordType(Lexer *lexer, char identifier[], size_t identifier_s) {
+int lx_getKeywordType(char identifier[], size_t identifier_s) {
     switch (identifier_s) {
+        case 2:
+            if (STR_N_EQUALS(identifier, "if", identifier_s))
+                return TOKEN_IF;
+        break;
         case 3:
             if (STR_N_EQUALS(identifier, "def", identifier_s))
                 return TOKEN_DEF;
             if (STR_N_EQUALS(identifier, "int", identifier_s))
                 return TOKEN_INT;
+        break;
+        case 4:
+            if (STR_N_EQUALS(identifier, "else", identifier_s))
+                return TOKEN_ELSE;
         break;
         case 6:
             if (STR_N_EQUALS(identifier, "return", identifier_s))
@@ -513,10 +584,15 @@ int lx_getKeywordType(Lexer *lexer, char identifier[], size_t identifier_s) {
     return TOKEN_IDENTIFIER;
 }
 
-void lPrint(char string[]) {
+void lPrint(char string[], size_t line) {
+    if (line != 0)
+        printf("line->%lu: ", line);
     printf("[Lexer]: %s\n", string);
 }
 
-void lPrintError(char string[], int errorCode) {
+void lPrintError(char string[], int errorCode, size_t line) {
+    if (line != 0)
+        printf("line->%lu: ", line);
+
     P_ERROR_FORMAT("[Lexer]: ");
 }
