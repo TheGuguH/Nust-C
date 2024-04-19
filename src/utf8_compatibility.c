@@ -106,7 +106,7 @@ void rs_free(RuneString *string) {
     string = NULL;
 }
 
-char* rs_converToString(RuneString *_runeString) {
+char* rs_convertToString(RuneString *_runeString) {
     char string_s = _runeString->runeQuantity * 4;
     char *string = calloc(string_s, sizeof(char));
 
@@ -155,7 +155,7 @@ rune_t rt_create(unsigned char _chars[], size_t _chars_s) {
             VERIFY_OVERLONG(BYTE_2_MINIMUM);
         break;
         case 3:
-            VERIFY_LENGHT(2);
+            VERIFY_LENGHT(3);
 
             VERIFY_CONTINUATION_BYTE(1);
             VERIFY_CONTINUATION_BYTE(2);
@@ -171,7 +171,7 @@ rune_t rt_create(unsigned char _chars[], size_t _chars_s) {
             VERIFY_OVERLONG(BYTE_3_MINIMUM);
         break;
         case 4:
-            VERIFY_LENGHT(2);
+            VERIFY_LENGHT(4);
 
             VERIFY_CONTINUATION_BYTE(1);
             VERIFY_CONTINUATION_BYTE(2);

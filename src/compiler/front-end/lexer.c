@@ -84,14 +84,18 @@ int lx_skip(Lexer *lexer) {
 
         lexer->_char = lexer->buffer[0];
 
-        if (lexer->buffer_s == 0)
+        if (lexer->buffer_s == 0) {
+            lexer->_char = EOF;
             return 0;
+        }
     } else {
         lexer->_char = lexer->buffer[lexer->bufferCursor];
     }
 
-    if (feof(lexer->file) == 0)
+    if (feof(lexer->file) == 0) {
+        lexer->_char = EOF;
         return 0;
+    }
 
     return 1;
 }
@@ -159,10 +163,20 @@ char lx_peek(Lexer *lexer) {
 }
 
 Token* lx_getNextToken(Lexer *lexer) {
-
     if (lx_skipEmpty(lexer) == 0) 
         return tk_create(TOKEN_EOF, lexer->line);
 
+    return lx_identifyToken(lexer);
+}
+
+Token* lx_getNextTokenInSameLine(Lexer *lexer) {
+    if (lx_skipBlank(lexer) == 0) 
+        return tk_create(TOKEN_EOF, lexer->line);
+
+    return lx_identifyToken(lexer);
+}
+
+Token* lx_identifyToken(Lexer *lexer) {
     if (isgraph(lexer->_char)) {
 
         if (lexer->_char == '/') {
@@ -200,11 +214,53 @@ Token* lx_getDigit(Lexer *lexer) {
 }
 
 Token* lx_getIdentifier(Lexer *lexer) {
-    LX_GET_BASE(identifier, lx_getKeywordType(lexer, identifier, identifier_s), isalnum(lexer->_char));
+    LX_GET_BASE(identifier, lx_getKeywordType(identifier, identifier_s), isalnum(lexer->_char));
 }
 
 Token* lx_getChar(Lexer *lexer) {
-    LX_GET_BASE(_char, TOKEN_CHAR_LITERAL, isdigit(lexer->_char));
+    rune_t _char = '\0';
+
+    LX_SKIPED_OP("invalid char");
+
+    _char =~ _char;
+
+    char string[] = {'\0', '\0', '\0', '\0'};
+
+    string[0] = lexer->_char;
+
+    int charProbalySize = charUTF8Lenght(string[0]);
+    
+    switch (lexer->_char) {
+        case '\'':
+            LX_SKIPED;
+            return tk_create_op(TOKEN_CHAR_LITERAL, lexer->line, (char*)&_char, 4);
+        break;
+        case '\\':
+            _char = lx_convertScapeSequence(lexer);
+        break;
+        default:
+            for (int i = 1; i < charProbalySize; i++) {
+
+                LX_SKIPED_OP("invalid charr");
+
+                string[i] = lexer->_char;
+
+                if (lexer->_char == '\'') 
+                    lPrintError("invalid character of a char", LX_INVALID_CHAR, lexer->line);
+            }
+
+            _char = rt_create((unsigned char*)&string, charProbalySize);
+
+            LX_SKIPED;
+        break;
+    }
+
+    if (lexer->_char != '\'')
+        lPrintError("invalid format of a char", LX_INVALID_CHAR_FORMAT, lexer->line);
+
+    LX_SKIPED;
+
+    return tk_create_op(TOKEN_CHAR_LITERAL, lexer->line, (char *)&_char, sizeof(rune_t));
 }
 
 Token* lx_getString(Lexer *lexer) {
@@ -245,7 +301,7 @@ Token* lx_getString(Lexer *lexer) {
 
     LX_SKIPED;
 
-    return tk_create_op(TOKEN_STRING_LITERAL, lexer->line, rs_converToString(_runeString), _runeString->runeQuantity * 4);
+    return tk_create_op(TOKEN_STRING_LITERAL, lexer->line, rs_convertToString(_runeString), _runeString->runeQuantity * 4);
 }
 
 Token* lx_getCompilerDirective(Lexer *lexer) {
@@ -262,6 +318,26 @@ Token* lx_getSymbol(Lexer *lexer) {
             return tk_create(token, lexer->line); \
 
     switch (lexer->_char) {
+        case '!':
+            RETURN_AND_SKIP(TOKEN_NOT);
+        break;
+        case '%':
+            RETURN_AND_SKIP(TOKEN_REST);
+        break;
+        case '&':
+            lx_skip(lexer);
+
+            if (lexer->_char == '&') {
+                lx_skip(lexer);
+                return tk_create(TOKEN_AND, lexer->line);
+            }
+            if (lexer->_char == '=') {
+                lx_skip(lexer);
+                return tk_create(TOKEN_AND, lexer->line);
+            }
+
+            return tk_create(TOKEN_BITW_AND, lexer->line);
+        break;
         case '(':
             RETURN_AND_SKIP(TOKEN_LEFT_PARENTHESE);
         break;
@@ -287,7 +363,7 @@ Token* lx_getSymbol(Lexer *lexer) {
             LX_SKIPED_OP("the character ':' need always an other character after it");
 
             if (lexer->_char == ':') {
-                LX_SKIPED_OP("the character '::' need always an other character after it");
+                lx_skip(lexer);
                 return tk_create(TOKEN_DOUBLE_COLON, lexer->line);
             }
 
@@ -390,7 +466,7 @@ rune_t lx_convertScapeSequence(Lexer *lexer) {
 
             if (lexer->_char == 'x') {
                 LX_SKIP_VERIFY_INVALID_SSEQUENCE;
-                
+
                 if (lexer->_char == 'x') {
                     LX_SKIP_VERIFY_INVALID_SSEQUENCE;
                     if (lexer->_char == 'x') {
@@ -406,15 +482,12 @@ rune_t lx_convertScapeSequence(Lexer *lexer) {
             }
             SET_HEXA_SCAPE(6, 7);
 
-            printf("%c%c%c%c\n", hexaChars[0], hexaChars[1], hexaChars[2], hexaChars[3]);
-
             rune = (rune_t)hexaToRune(hexaChars, 8, lexer->line);
 
-            printf("%u", rune);
             return rune;
         break;
         case '\\':
-            rune = (rune_t)'\a';
+            rune = (rune_t)'\\';
         break;
         default:
             lPrintError("can't identify the scape sequence", LX_CANT_GET_SSEQUENCE, lexer->line);
@@ -433,7 +506,7 @@ uint32_t hexaToRune(char _chars[], size_t _chars_s, size_t line) {
     uint8_t values[4] = {0, 0, 0, 0};
 
     for (int i = 0; i < 4; i++) {
-        char hexaChars[] = {_chars[i], _chars[i + 1]};
+        char hexaChars[] = {_chars[i * 2], _chars[(i * 2) + 1]};
         values[i] = hexaToValue(hexaChars, 2, line);
     }
 
@@ -474,19 +547,27 @@ uint8_t hexaToValue(char _chars[], size_t _chars_s, size_t line) {
     uint8_t returnValue = value[0];
 
     returnValue <<= 4;
-
+    
     returnValue |= value[1];
 
     return returnValue;
 }
 
-int lx_getKeywordType(Lexer *lexer, char identifier[], size_t identifier_s) {
+int lx_getKeywordType(char identifier[], size_t identifier_s) {
     switch (identifier_s) {
+        case 2:
+            if (STR_N_EQUALS(identifier, "if", identifier_s))
+                return TOKEN_IF;
+        break;
         case 3:
             if (STR_N_EQUALS(identifier, "def", identifier_s))
                 return TOKEN_DEF;
             if (STR_N_EQUALS(identifier, "int", identifier_s))
                 return TOKEN_INT;
+        break;
+        case 4:
+            if (STR_N_EQUALS(identifier, "else", identifier_s))
+                return TOKEN_ELSE;
         break;
         case 6:
             if (STR_N_EQUALS(identifier, "return", identifier_s))
