@@ -52,7 +52,7 @@ void startCompiling(size_t file_c, char *file_v[], CompilerContext context) {
     printf("<%lu>\n", lexer->buffer_s);
 
     while ((tk = lx_getNextToken(lexer))->type != TOKEN_EOF && tk->type != TOKEN_INVALID_TOKEN) {
-        printf("<%d, %s, %lu, %lu>\n", tk->type, tk->value, tk->value_s, tk->line);
+        tk_print(tk);
     }
 }
 

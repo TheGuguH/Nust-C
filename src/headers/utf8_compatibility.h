@@ -52,7 +52,7 @@ void rs_addChar(RuneString *string, char _chars[], size_t _chars_s);
 
 char* rs_converToString(RuneString *_runeString);
 
-rune_t rt_create(char _chars[], size_t _chars_s);
+rune_t rt_create(unsigned char _chars[], size_t _chars_s);
 
 char* rt_convertToChar(rune_t rune);
 
