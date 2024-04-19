@@ -35,6 +35,7 @@ enum EErrorCodes {
     LX_EARLY_EOF,
     LX_HEXA_BAD_FORMAT,
     LX_CANT_GET_SSEQUENCE,
+    LX_INVALID_STRING,
     //Token
     TK_MEMORY_ALLOC_ERROR,
 };

@@ -3,7 +3,7 @@ namespace tests::basic
 use std::io //finally a use!
 
 def int Main() {
-    Printf("%d", Add(10, 10));
+    Printf("%d\xxC3A1", Add(10, 10));
 
     return 0;
 }
