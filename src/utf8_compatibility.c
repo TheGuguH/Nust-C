@@ -42,20 +42,15 @@ const uint32_t UTF_8_LIMIT = 0xF48FBFBF;
 
 void rt_print(rune_t rune) {
     unsigned char *runeBytes = (unsigned char*)&rune;
-
-    for (size_t i = 0; i < sizeof(rune_t); i++) {
+    
+    for (int i = 3; i >= 0; i--) {
         printf("%c", runeBytes[i]);
     }
 }
 
 void rt_println(rune_t rune) {
-    unsigned char *runeBytes = (unsigned char*)&rune;
-
-    for (size_t i = 0; i < sizeof(rune_t); i++) {
-        printf("%c", runeBytes[i]);
-    }
-
-    printf("\n");
+    rt_print(rune);
+    puts("");
 }
 
 RuneString* rs_create() {
@@ -77,7 +72,7 @@ RuneString* rs_create() {
 }
 
 void rs_add(RuneString *string, rune_t rune) {
-    string->runeSequence = realloc(string->runeSequence, string->runeQuantity + 1);
+    string->runeSequence = realloc(string->runeSequence, (string->runeQuantity + 1) * sizeof(rune_t));
 
     if (string->runeSequence == NULL) {
         uPrintError("error on trying to realloc memory for runeSequence of a RuneString", UTF8_REALLOC_SEQUENCE_ERROR);
@@ -90,9 +85,9 @@ void rs_add(RuneString *string, rune_t rune) {
 
 void rs_addChar(RuneString *string, char _chars[], size_t _chars_s) {
 
-    rune_t rune = rt_create(_chars, _chars_s);
+    rune_t rune = rt_create((unsigned char*)_chars, _chars_s);
 
-    string->runeSequence = realloc(string->runeSequence, string->runeQuantity + 1);
+    string->runeSequence = realloc(string->runeSequence, (string->runeQuantity + 1) * sizeof(rune_t));
 
     if (string->runeSequence == NULL) {
         uPrintError("error on trying to realloc memory for runeSequence of a RuneString", UTF8_REALLOC_SEQUENCE_ERROR);
@@ -111,14 +106,14 @@ void rs_free(RuneString *string) {
     string = NULL;
 }
 
-char* rs_converToString(RuneString *_runeString) {
+char* rs_convertToString(RuneString *_runeString) {
     char string_s = _runeString->runeQuantity * 4;
     char *string = calloc(string_s, sizeof(char));
 
     for (size_t i = 0; i < _runeString->runeQuantity; i++) {
         char *bytes = (char*)&_runeString->runeSequence[i];
 
-        for (size_t j = 0; i < 4; i++) {
+        for (size_t j = 0; j < 4; j++) {
             string[i * 4 + j] = bytes[j];
         }
     }
@@ -126,7 +121,7 @@ char* rs_converToString(RuneString *_runeString) {
     return string;
 }
 
-rune_t rt_create(char _chars[], size_t _chars_s) {
+rune_t rt_create(unsigned char _chars[], size_t _chars_s) {
 #define VERIFY_LENGHT(size)        if (_chars_s != size) \
             uPrintError("invalid lenght for this UTF-8 character", UTF8_INVALID_LENGHT); \
 
@@ -152,14 +147,15 @@ rune_t rt_create(char _chars[], size_t _chars_s) {
             VERIFY_CONTINUATION_BYTE(1);
 
             rune |= _chars[0];
+
             rune <<= 8;
 
             rune |= _chars[1];
-
+            
             VERIFY_OVERLONG(BYTE_2_MINIMUM);
         break;
         case 3:
-            VERIFY_LENGHT(2);
+            VERIFY_LENGHT(3);
 
             VERIFY_CONTINUATION_BYTE(1);
             VERIFY_CONTINUATION_BYTE(2);
@@ -175,7 +171,7 @@ rune_t rt_create(char _chars[], size_t _chars_s) {
             VERIFY_OVERLONG(BYTE_3_MINIMUM);
         break;
         case 4:
-            VERIFY_LENGHT(2);
+            VERIFY_LENGHT(4);
 
             VERIFY_CONTINUATION_BYTE(1);
             VERIFY_CONTINUATION_BYTE(2);
