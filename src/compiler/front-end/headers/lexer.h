@@ -35,6 +35,10 @@ char lx_peek(Lexer *lexer);
 
 Token* lx_getNextToken(Lexer *lexer);
 
+Token* lx_getNextTokenInSameLine(Lexer *lexer);
+
+Token* lx_identifyToken(Lexer *lexer);
+
 Token* lx_getDigit(Lexer *lexer);
 
 Token* lx_getIdentifier(Lexer *lexer);
@@ -51,7 +55,7 @@ Token* lx_getSymbol(Lexer *lexer);
 
 rune_t lx_convertScapeSequence(Lexer *lexer);
 
-int lx_getKeywordType(Lexer *lexer, char identifier[], size_t identifier_s);
+int lx_getKeywordType(char identifier[], size_t identifier_s);
 
 //The array size need to be 2
 
