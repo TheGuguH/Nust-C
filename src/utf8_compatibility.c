@@ -122,85 +122,40 @@ char* rs_convertToString(RuneString *_runeString) {
 }
 
 rune_t rt_create(unsigned char _chars[], size_t _chars_s) {
-#define VERIFY_LENGHT(size)        if (_chars_s != size) \
-            uPrintError("invalid lenght for this UTF-8 character", UTF8_INVALID_LENGHT); \
-
-#define VERIFY_CONTINUATION_BYTE(index)       if ((_chars[index] & CONTINUATION_VERIFY_BYTE) != CONTINUATION_BYTE) { \
-            uPrintError("one of bytes of a UTF-8 char ins't a continuation byte", UTF8_NO_CONTINUATION_BYTE); \
-        } \
-
-#define VERIFY_OVERLONG(minimum) if (rune < minimum) { \
-            uPrintError("trying to make overlong", UTF8_OVERLONG); \
-        } \
+    if (_chars_s == 0)
+        uPrintError("invalid lenght for this UTF-8 character", UTF8_INVALID_LENGHT);
 
     rune_t rune = 0;
 
-    switch (charUTF8Lenght(_chars[0])) {
-        case 1:
-            VERIFY_LENGHT(1);
+    size_t size = charUTF8Lenght(_chars[0]);
 
-            rune = _chars[0];
-        break;
-        case 2:
-            VERIFY_LENGHT(2);
+    if (_chars_s != size)
+            uPrintError("invalid lenght for this UTF-8 character", UTF8_INVALID_LENGHT);
 
-            VERIFY_CONTINUATION_BYTE(1);
+    for (size_t i = 0; i < _chars_s - 1; i++) {
+        rune |= _chars[i];
+        rune <<= 8;
 
-            rune |= _chars[0];
-
-            rune <<= 8;
-
-            rune |= _chars[1];
-            
-            VERIFY_OVERLONG(BYTE_2_MINIMUM);
-        break;
-        case 3:
-            VERIFY_LENGHT(3);
-
-            VERIFY_CONTINUATION_BYTE(1);
-            VERIFY_CONTINUATION_BYTE(2);
-
-            rune |= _chars[0];
-            rune <<= 8;
-
-            rune |= _chars[1];
-            rune <<= 8;
-
-            rune |= _chars[2];
-
-            VERIFY_OVERLONG(BYTE_3_MINIMUM);
-        break;
-        case 4:
-            VERIFY_LENGHT(4);
-
-            VERIFY_CONTINUATION_BYTE(1);
-            VERIFY_CONTINUATION_BYTE(2);
-            VERIFY_CONTINUATION_BYTE(3);
-
-            rune |= _chars[0];
-            rune <<= 8;
-
-            rune |= _chars[1];
-            rune <<= 8;
-
-            rune |= _chars[2];
-            rune <<= 8;
-
-            rune |= _chars[3];
-
-            VERIFY_OVERLONG(BYTE_4_MINIMUM);
-        break;
-        default:
-            uPrintError("trying to represent a non UTF-8 char", UTF8_INVALID_CHARACTER);
-        break;
+        if ((_chars[i + 1] & CONTINUATION_VERIFY_BYTE) != CONTINUATION_BYTE) {
+            uPrintError("one of bytes of a UTF-8 char ins't a continuation byte", UTF8_NO_CONTINUATION_BYTE);
+        }
     }
 
-    if (rune > UTF_8_LIMIT) {
-        uPrintError("trying to represent over the UTF-8 limit", UTF8_AWAY_LIMITS);
-    }
+    rune |= _chars[_chars_s - 1];
 
-    if (rune >= UTF_START_SURROGATE_PAIRS && rune <= UTF_END_SURROGATE_PAIRS) {
-        uPrintError("trying to represent a surrogate pair", UTF8_SURROGATE_PAIR);
+    uint32_t minimum;
+
+    if (_chars_s == 1)
+        return rune;
+    else if (_chars_s == 2)
+        minimum = BYTE_2_MINIMUM;
+    else if (_chars_s == 3)
+        minimum = BYTE_3_MINIMUM;
+    else
+        minimum = BYTE_4_MINIMUM;
+
+    if (rune < minimum) {
+        uPrintError("trying to make overlong", UTF8_OVERLONG);
     }
 
     return rune;
