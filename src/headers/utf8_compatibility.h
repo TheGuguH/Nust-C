@@ -13,7 +13,7 @@
 typedef uint32_t rune_t;
 
 /*
-    Nust C string is a sequence of runes, called "Rune String" in NCC.
+    Nust C string is a sequence of runes, called "Rune String" in NCT.
 */
 
 typedef struct {
