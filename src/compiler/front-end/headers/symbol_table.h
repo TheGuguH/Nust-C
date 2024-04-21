@@ -69,4 +69,8 @@ typedef struct {
     NamespaceNode *namespace_v;
 } SymbolTable;
 
+SymbolTable st_create();
+
+void st_free(SymbolTable *_symbolTable);
+
 #endif
