@@ -21,39 +21,39 @@ typedef struct {
 
 Lexer* lx_create(FILE *file);
 
-void lx_free(Lexer *lexer);
+void lx_free(Lexer *_lexer);
 
-int lx_skip(Lexer *lexer);
+int lx_skip(Lexer *_lexer);
 
-int lx_skipEmpty(Lexer *lexer);
+int lx_skipEmpty(Lexer *_lexer);
 
-int lx_skipBlank(Lexer *lexer);
+int lx_skipBlank(Lexer *_lexer);
 
-void lx_skipComment(Lexer *lexer);
+void lx_skipComment(Lexer *_lexer);
 
-char lx_peek(Lexer *lexer);
+char lx_peek(Lexer *_lexer);
 
-Token* lx_getNextToken(Lexer *lexer);
+Token* lx_getNextToken(Lexer *_lexer);
 
-Token* lx_getNextTokenInSameLine(Lexer *lexer);
+Token* lx_getNextTokenInSameLine(Lexer *_lexer);
 
-Token* lx_identifyToken(Lexer *lexer);
+Token* lx_identifyToken(Lexer *_lexer);
 
-Token* lx_getDigit(Lexer *lexer);
+Token* lx_getDigit(Lexer *_lexer);
 
-Token* lx_getIdentifier(Lexer *lexer);
+Token* lx_getIdentifier(Lexer *_lexer);
 
-Token* lx_getChar(Lexer *lexer);
+Token* lx_getChar(Lexer *_lexer);
 
-Token* lx_getString(Lexer *lexer);
+Token* lx_getString(Lexer *_lexer);
 
-Token* lx_getCompilerDirective(Lexer *lexer);
+Token* lx_getCompilerDirective(Lexer *_lexer);
 
-Token* lx_getAssemblerDirective(Lexer *lexer);
+Token* lx_getAssemblerDirective(Lexer *_lexer);
 
-Token* lx_getSymbol(Lexer *lexer);
+Token* lx_getSymbol(Lexer *_lexer);
 
-rune_t lx_convertScapeSequence(Lexer *lexer);
+rune_t lx_convertScapeSequence(Lexer *_lexer);
 
 int lx_getKeywordType(char identifier[], size_t identifier_s);
 
