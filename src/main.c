@@ -141,7 +141,7 @@ int convertToOSEnum(char assembly[]) {
     } else if (STR_N_EQUALS(assembly, "-linux", 7)) {
         return ASSEMBLY_X86;
     } else {
-        printError("Sorry, but the os passed ins't a os, use -help -os to show disponible os", INVALID_OS);
+        printError("Sorry, but the os passed ins't a OS, use -help -os to show disponible os", INVALID_OS);
     }
     return -1;
 }
