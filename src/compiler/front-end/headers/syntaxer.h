@@ -17,6 +17,14 @@ Syntaxer* sx_create(char *fileName, size_t fileName_s, FILE *_file, SymbolTable 
 
 void sx_free(Syntaxer *_syntaxer);
 
-void sx_start(SymbolTable *_syntaxer);
+Token* sx_assert(Syntaxer *_syntaxer, int type);
+
+void sx_getNextAST(Syntaxer *_syntaxer);
+
+void sx_getAttribute(Syntaxer *_syntaxer);
+
+void syPrint(char string[]);
+
+void syPrintError(char string[], int errorCode);
 
 #endif

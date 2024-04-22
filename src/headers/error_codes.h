@@ -40,6 +40,11 @@ enum EErrorCodes {
     LX_INVALID_CHAR_FORMAT,
     //Token
     TK_MEMORY_ALLOC_ERROR,
+    //AST
+    AST_MEMORY_ALLOC_ERROR,
+    //Syntaxer
+    SY_MEMORY_ALLOC_ERROR,
+    SY_UNEXPECTED_TOKEN,
 };
 
 #endif
