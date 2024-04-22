@@ -53,7 +53,12 @@ void startCompiling(size_t file_c, char *file_v[], CompilerContext context) {
 
     while ((tk = lx_getNextToken(lexer))->type != TOKEN_EOF && tk->type != TOKEN_INVALID_TOKEN) {
         tk_print(tk);
+        tk_free(tk);
     }
+
+    tk_free(tk);
+    
+    lx_free(lexer);
 }
 
 int isSourceFile(char file[]) {
