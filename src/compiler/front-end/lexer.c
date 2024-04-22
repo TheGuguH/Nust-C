@@ -1,6 +1,7 @@
 #include "headers/lexer.h"
 
 #include "headers/token.h"
+
 #include "../../headers/error_codes.h"
 #include "../../headers/utf8_compatibility.h"
 #include "../../headers/utils.h"
@@ -39,7 +40,7 @@ Lexer* lx_create(FILE *file) {
     Lexer *_lexer = malloc(sizeof(Lexer));
 
     if (_lexer == NULL) {
-        lPrintError("can't alloc memory for a _lexer", LX_MEMORY_ALLOC_ERROR, 0);
+        lPrintError("can't alloc memory for a lexer", LX_MEMORY_ALLOC_ERROR, 0);
     }
 
     _lexer->file = file;
@@ -59,6 +60,16 @@ Lexer* lx_create(FILE *file) {
 }
 
 void lx_free(Lexer *_lexer) {
+    if (_lexer == NULL)
+        return;
+
+    fclose(_lexer->file);
+    _lexer->file = NULL;
+
+    _lexer->buffer_s = 0;
+    _lexer->fileCursor = 0;
+    _lexer->line = 0;
+
     free(_lexer);
     _lexer = NULL;
 }
@@ -258,7 +269,15 @@ Token* lx_getChar(Lexer *_lexer) {
 
     LX_SKIPED;
 
-    return tk_create_op(TOKEN_CHAR_LITERAL, _lexer->line, (char *)&_char, sizeof(rune_t));
+    char *_chars = malloc(sizeof(rune_t));
+
+    if (_chars == NULL) {
+        lPrintError("can't alloc memory for a character set", LX_MEMORY_ALLOC_ERROR, _lexer->line);
+    }
+
+    memcpy(_chars, &_char, sizeof(rune_t));
+
+    return tk_create_op(TOKEN_CHAR_LITERAL, _lexer->line, _chars, sizeof(rune_t));
 }
 
 Token* lx_getString(Lexer *_lexer) {
@@ -299,7 +318,12 @@ Token* lx_getString(Lexer *_lexer) {
 
     LX_SKIPED;
 
-    return tk_create_op(TOKEN_STRING_LITERAL, _lexer->line, rs_convertToString(_runeString), _runeString->runeQuantity * 4);
+    char *_chars = rs_convertToString(_runeString); 
+    size_t _chars_s = _runeString->runeQuantity * 4;
+
+    rs_free(_runeString);
+
+    return tk_create_op(TOKEN_STRING_LITERAL, _lexer->line, _chars, _chars_s);
 }
 
 Token* lx_getCompilerDirective(Lexer *_lexer) {

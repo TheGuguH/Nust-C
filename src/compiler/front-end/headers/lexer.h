@@ -57,9 +57,11 @@ rune_t lx_convertScapeSequence(Lexer *_lexer);
 
 int lx_getKeywordType(char identifier[], size_t identifier_s);
 
-//The array size need to be 2
+//The array size need to be 8
 
 uint32_t hexaToRune(char _chars[], size_t _chars_s, size_t line);
+
+//The array size need to be 2
 
 uint8_t hexaToValue(char _chars[], size_t _chars_s, size_t line);
 

@@ -1,5 +1,5 @@
 {
-    "workbench.iconTheme": "mc-dp-icons",
+    "workbench.iconTheme": "vs-seti",
     "files.associations": {
         "*.c": "c",
         "*.h": "c",
