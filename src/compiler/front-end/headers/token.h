@@ -95,6 +95,8 @@ void tk_print(Token *token);
 
 void tk_printValue(Token *token);
 
+char* tk_getValueOfAType(int type);
+
 void tPrintError(char string[], int errorCode);
 
 #endif

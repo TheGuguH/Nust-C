@@ -17,22 +17,22 @@
 */
 
 //
-const uint8_t CONTINUATION_VERIFY_BYTE = 0b11000000;
-const uint8_t CONTINUATION_BYTE = 0b10000000;
-const uint8_t UTF_2_BYTE_LENGHT_VERIFY_BYTE = 0b11100000;
-const uint8_t UTF_2_BYTE_LENGHT_BYTE = 0b11000000;
-const uint8_t UTF_3_BYTE_LENGHT_VERIFY_BYTE = 0b11110000;
-const uint8_t UTF_3_BYTE_LENGHT_BYTE = 0b11100000;
-const uint8_t UTF_4_BYTE_LENGHT_VERIFY_BYTE = 0b11111000;
-const uint8_t UTF_4_BYTE_LENGHT_BYTE = 0b11110000;
+const uint8_t CONTINUATION_VERIFY_BYTE = 0xc0; //0b11000000
+const uint8_t CONTINUATION_BYTE = 0x80; //0b10000000
+const uint8_t UTF_2_BYTE_LENGHT_VERIFY_BYTE = 0xe0; //0b11100000
+const uint8_t UTF_2_BYTE_LENGHT_BYTE = 0xc0; //0b11000000
+const uint8_t UTF_3_BYTE_LENGHT_VERIFY_BYTE = 0xf0; //0b11110000
+const uint8_t UTF_3_BYTE_LENGHT_BYTE = 0xe0; //0b11100000
+const uint8_t UTF_4_BYTE_LENGHT_VERIFY_BYTE = 0xf8; //0b11111000
+const uint8_t UTF_4_BYTE_LENGHT_BYTE = 0xf0; //0b11110000
 
 const uint8_t ASCII_LIMIT = 127;
-const uint32_t BYTE_2_MINIMUM = 0xC280; 
-const uint32_t BYTE_3_MINIMUM = 0xE0A080; 
-const uint32_t BYTE_4_MINIMUM = 0xF0908080; 
-const uint32_t UTF_START_SURROGATE_PAIRS = 0xEDA080;  //U+D800
-const uint32_t UTF_END_SURROGATE_PAIRS = 0xEDBFBF;  //U+DFFF
-const uint32_t UTF_8_LIMIT = 0xF48FBFBF; 
+const uint32_t BYTE_2_MINIMUM = 0xc280; 
+const uint32_t BYTE_3_MINIMUM = 0xe0a080; 
+const uint32_t BYTE_4_MINIMUM = 0xf0908080; 
+const uint32_t UTF_START_SURROGATE_PAIRS = 0xeda080;  //U+D800
+const uint32_t UTF_END_SURROGATE_PAIRS = 0xedbfbf;  //U+DFFF
+const uint32_t UTF_8_LIMIT = 0xf48fbfbf; 
 
 /*
     Nust C char has 4 bytes, and EVERY character in a string in Nust C has 4 bytes, its a rule!
