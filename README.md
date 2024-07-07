@@ -7,24 +7,7 @@
 <br>
 <br>
 
-Nust C is a C-like, mid-level, general-purpose programming language with an emphasis on security and flexibility while maintaining high performance. It is strongly typed, and its paradigms are structured and functional.
+Nust C is a simple, education-proposite low-level language. Its a C-like language with basic library (math functions, basic console write/read functions).
 
-Nust C has influence mainly on C, but there is a great influence of Rust on security issues.
-
-This *README.md* contains basic information about the language (you can find more information about it on the Wiki in the GitHub repository), but its main focus is on the NCT (Nust C Compiler Tool), its characteristics, operation and use.
-
-# NCT
-
-## How to install
-
-NCT was made with cross-platform in mind, that is, it works between platforms, so each operating system will have a different installation, so follow the instructions correctly.
-
-### Linux
-
-To install on Linux, use the following command:
-
-´´´bash
-curl -sSL https://raw.githubusercontent.com/0GuguH9/Nust-C/master/install/linux.sh | bash
-´´´
-
-And after this, you can use the **nct** command everywhere.
+This project is for educational purposes, providing a practical example of compiler development, from front-end to assembly generation.
+The generated assembly is an x64, and if you want to transform the generated assembly into executable machine code, look for an assembler like nasm, or if you are on Linux, use the ```as``` command

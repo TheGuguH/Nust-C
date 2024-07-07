@@ -2,14 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Definição dos tipos de nó da AST
 typedef enum {
     NODE_ASSIGNMENT,
     NODE_IDENTIFIER,
     NODE_NUMBER
 } NodeType;
 
-// Estrutura de nó da AST
 typedef struct Node {
     NodeType type;
     char *value;
@@ -17,7 +15,6 @@ typedef struct Node {
     struct Node *right;
 } Node;
 
-// Função para criar um nó da AST
 Node *createNode(NodeType type, const char *value) {
     Node *node = (Node *)malloc(sizeof(Node));
     if (node == NULL) {
@@ -31,7 +28,6 @@ Node *createNode(NodeType type, const char *value) {
     return node;
 }
 
-// Função para liberar a memória da AST
 void freeAST(Node *root) {
     if (root != NULL) {
         freeAST(root->left);
@@ -41,7 +37,6 @@ void freeAST(Node *root) {
     }
 }
 
-// Função para fazer o parsing e construir a AST
 Node *parseAssignment(const char *expression) {
     char variable[100], value[100];
     sscanf(expression, "%s = %s", variable, value);
@@ -53,7 +48,6 @@ Node *parseAssignment(const char *expression) {
     return assignmentNode;
 }
 
-// Função para imprimir a AST (em pré-ordem)
 void printAST(Node *root) {
     if (root != NULL) {
         printf("(");
@@ -83,7 +77,6 @@ int main() {
     printAST(root);
     printf("\n");
 
-    // Liberar memória da AST
     freeAST(root);
 
     return 0;

@@ -1,7 +1,6 @@
-#include "headers/utf8_compatibility.h"
+#include "utf8_compatibility.h"
 
-#include "headers/error_codes.h"
-#include "headers/utils.h"
+#include "error_codes.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -57,13 +56,13 @@ RuneString* rs_create() {
     RuneString *string = malloc(sizeof(RuneString));
 
     if (string == NULL) {
-        uPrintError("can't alloc memory for a rune string", UTF8_ALLOC_ERROR);
+        uPrintError("can't alloc memory for a rune string", ERROR_MALLOC_FAILED);
     }
 
     string->runeSequence = malloc(sizeof(rune_t));
 
     if (string->runeSequence == NULL) {
-        uPrintError("can't realloc memory for a rune sequence", UTF8_ALLOC_SEQUENCE_ERROR);
+        uPrintError("can't realloc memory for a rune sequence", ERROR_MALLOC_FAILED);
     }
 
     string->runeQuantity = 0;
@@ -75,7 +74,7 @@ void rs_add(RuneString *string, rune_t rune) {
     string->runeSequence = realloc(string->runeSequence, (string->runeQuantity + 1) * sizeof(rune_t));
 
     if (string->runeSequence == NULL) {
-        uPrintError("error on trying to realloc memory for runeSequence of a RuneString", UTF8_REALLOC_SEQUENCE_ERROR);
+        uPrintError("error on trying to realloc memory for runeSequence of a RuneString", ERROR_REALLOC_FAILED);
     }
     
     string->runeSequence[string->runeQuantity] = rune;
@@ -90,7 +89,7 @@ void rs_addChar(RuneString *string, char _chars[], size_t _chars_s) {
     string->runeSequence = realloc(string->runeSequence, (string->runeQuantity + 1) * sizeof(rune_t));
 
     if (string->runeSequence == NULL) {
-        uPrintError("error on trying to realloc memory for runeSequence of a RuneString", UTF8_REALLOC_SEQUENCE_ERROR);
+        uPrintError("error on trying to realloc memory for runeSequence of a RuneString", ERROR_REALLOC_FAILED);
     }
     
     string->runeSequence[string->runeQuantity] = rune;
@@ -123,21 +122,21 @@ char* rs_convertToString(RuneString *_runeString) {
 
 rune_t rt_create(unsigned char _chars[], size_t _chars_s) {
     if (_chars_s == 0)
-        uPrintError("invalid lenght for this UTF-8 character", UTF8_INVALID_LENGHT);
+        uPrintError("invalid lenght for this UTF-8 character", ERROR_UTF8_INVALID_LENGHT);
 
     rune_t rune = 0;
 
     size_t size = charUTF8Lenght(_chars[0]);
 
     if (_chars_s != size)
-            uPrintError("invalid lenght for this UTF-8 character", UTF8_INVALID_LENGHT);
+            uPrintError("invalid lenght for this UTF-8 character", ERROR_UTF8_INVALID_LENGHT);
 
     for (size_t i = 0; i < _chars_s - 1; i++) {
         rune |= _chars[i];
         rune <<= 8;
 
         if ((_chars[i + 1] & CONTINUATION_VERIFY_BYTE) != CONTINUATION_BYTE) {
-            uPrintError("one of bytes of a UTF-8 char ins't a continuation byte", UTF8_NO_CONTINUATION_BYTE);
+            uPrintError("one of bytes of a UTF-8 char ins't a continuation byte", ERROR_UTF8_NO_NEXT_BYTE);
         }
     }
 
@@ -155,7 +154,7 @@ rune_t rt_create(unsigned char _chars[], size_t _chars_s) {
         minimum = BYTE_4_MINIMUM;
 
     if (rune < minimum) {
-        uPrintError("trying to make overlong", UTF8_OVERLONG);
+        uPrintError("trying to make overlong", ERROR_UTF8_OVERLONG);
     }
 
     return rune;
@@ -184,5 +183,5 @@ void uPrint(char string[]) {
 }
 
 void uPrintError(char string[], int errorCode) {
-    P_ERROR_FORMAT("[UTF-8]: ");
+        printf("[UTF-8]: %s\n", string);
 }
