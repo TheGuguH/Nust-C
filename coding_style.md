@@ -17,7 +17,7 @@ typedef uint32_t rune_t;
 An example of where it cannot be used:
 
 ```c
-typedef struct {
+typedef struct RuneString {
     rune_t *runeSequence;
     size_t runeQuantity;
     size_t allocatedMemory;
@@ -29,7 +29,7 @@ typedef struct {
 Structure names (struct, union and enum) use PascalCase, with the exception of the enum which uses EPascalCase.
 
 ```c
-typedef struct {
+typedef struct RuneString {
      rune_t *runeSequence;
      size_t runeQuantity;
      size_t allocatedMemory;
@@ -38,14 +38,6 @@ typedef struct {
 
 Comments:
 - Structures (with enum exception) that have an associated name must always be one with typedef. The associated name with enuns is just for better identification for what it is.
-- If the structure needs to have itself within it (as in a simple linked list), the name of the structure will be the same. Example:
-
-```c
-typedef struct LinkedNode {
-     void *data;
-     struct LinkedNode *next;
-} LinkedNode;
-```
 
 ### Variables identifiers
 
@@ -136,7 +128,7 @@ rune_t* convertToRune(char[] characterString) {
 
 ### Function identifiers
 
-CamelCase (camelCase) is used for function identifiers, and when referring to functions without returns, we use subroutine and not function to make it easier to speak and write; the same applies to functions without arguments and returns, we call procedures. The general name for function, subroutines and procedures is "instruction block".
+camelCase is used for function identifiers, and when referring to functions without returns, we use subroutine and not function to make it easier to speak and write; the same applies to functions without arguments and returns, we call procedures. The general name for function, subroutines and procedures is "instruction block".
 
 When the instruction block is "*linked*" to a structure, we use an abbreviation of it followed by an _ and the name, example:
 

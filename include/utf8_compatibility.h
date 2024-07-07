@@ -1,5 +1,5 @@
-#ifndef UTF8_COMPATIBILITY_H
-#define UTF8_COMPATIBILITY_H 
+#ifndef NUSTC_UTF8_COMPATIBILITY_H
+#define NUSTC_UTF8_COMPATIBILITY_H 
 
 #include <stdint.h>
 #include <stdlib.h>
