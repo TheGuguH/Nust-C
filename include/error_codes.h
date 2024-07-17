@@ -7,6 +7,9 @@ enum EErrorCode {
     ERROR_REALLOC_FAILED,
     ERROR_TRY_TO_FREE_NULL,
     ERROR_TRY_TO_USE_NULL,
+    // Argument errors
+    ERROR_NO_ENOUGH_ARGUMENTS,
+    ERROR_INVALID_ARGUMENTS,
     // UTF-8 compatibility errors
     ERROR_UTF8_INVALID_LENGHT,
     ERROR_UTF8_NO_NEXT_BYTE,
