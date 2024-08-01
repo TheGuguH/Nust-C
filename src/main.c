@@ -1,6 +1,6 @@
 #include "main.h"
 
-#include "error_codes.h"
+#include "error.h"
 #include "utils.h"
 
 #include <stdio.h>
@@ -9,12 +9,9 @@
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 4) {
-
-        fprintf(stderr, "Not enough arguments were given\n"
-            "use: nustc <asm output> <input's>\n");
-        return ERROR_NO_ENOUGH_ARGUMENTS;
-    }
+    if (argc < 4) 
+        err_printExit(ERROR_NO_ENOUGH_ARGUMENTS, "Not enough arguments were given\n"
+            "use: nustc <asm output> <input's>");
 
     genAssembly(argc, argv);
 
@@ -25,17 +22,11 @@ void genAssembly(int argc, char *argv[]) {
 
     for (int i = 2; i < argc; i++) {
 
-        if (!fileExists(argv[i])) {
+        if (!fileExists(argv[i]))
+            err_printExit(ERROR_INVALID_ARGUMENTS, "Error: The file '%s' don't exists", argv[i]);
 
-            fprintf(stderr, "The file '%s' don't exists", argv[i]);
-            exit(ERROR_INVALID_ARGUMENTS);
-        }
-
-        if (!isNustCFile(argv[i])) {
-
-            fprintf(stderr, "File '%s' doesn't appear to be a Nust C file", argv[i]);
-            exit(ERROR_INVALID_ARGUMENTS);
-        }
+        if (!isNustCFile(argv[i]))
+            err_printExit(ERROR_INVALID_ARGUMENTS, "File '%s' doesn't appear to be a Nust C file", argv[i]);
     }    
 }
 

@@ -14,7 +14,17 @@ enum EErrorCode {
     ERROR_UTF8_INVALID_LENGHT,
     ERROR_UTF8_NO_NEXT_BYTE,
     ERROR_UTF8_OVERLONG,
-
 };
+
+enum EWarnCode {
+    WARN_EMPTY_FILE,
+    WARN_EARLY_EOF,
+};
+
+void err_print(const enum EErrorCode code, const char *error, ...);
+
+void err_warn(const enum EWarnCode code, const char *warn, ...);
+
+void err_printExit(const enum EErrorCode code, const char *error, ...);
 
 #endif
