@@ -60,9 +60,6 @@ typedef struct Token {
     size_t line;
 } Token;
 
-/*
- * Value need to be dynamic maded
- */
 Token* tk_create(size_t line);
 
 Token* tk_create_op(enum TokenType type, char *value, size_t value_s, size_t line);
