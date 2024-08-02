@@ -7,6 +7,8 @@
 
 // It's not recommended to make a buffer with more than 16 KB for old devices compatibility
 #define BUFFER_SIZE 4096
+#define STR_POOL_DEFAULT_SIZE 32
+#define STR_POOL_MULTIPLIER 1.5
  
 // Represents a Lexer object for... lexer phase ¯\_(ツ)_/¯
 typedef struct Lexer {
@@ -32,19 +34,44 @@ typedef struct Lexer {
      It can be more memory safety
     */
     // Token memory pool
-    Token *token;
+    Token *_token;
     // String (token value) memory pool (string lenght is in Token memory Pool)
     char *strPool;
     // Current string pool size
     size_t strPool_s;
 } Lexer;
 
+// Heap manipulation
+
 // Create a lexer object
 Lexer* lx_create(char *file);
 
-
-
 // Free a lexer object
-void lx_free(Lexer *_lexer);
+void lx_free(Lexer *lx);
+
+// Add char to string memory pool
+void lx_addChar(Lexer *lx, char _char);
+
+// Utils
+
+// Get the next char in lexer
+void lx_skip(Lexer *lx);
+
+// Get the next char non-blank (i.e., not a space or invisible character) in lexer
+void lx_skipBlank(Lexer *lx);
+
+// Get the next char non-blank in the same line in lexer
+void lx_skipBlankInLine(Lexer *lx);
+
+// Call the correct function for a token based on lexer char
+Token* lx_getToken(Token *tk);
+
+// Get the next token
+Token* lx_getNext(Lexer *lx);
+
+// Get the next token in the same line
+Token* lx_getNextInLine(Lexer *lx);
+
+// Token types identifier
 
 #endif

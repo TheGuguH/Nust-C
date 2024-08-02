@@ -8,7 +8,7 @@ enum TokenType {
     TOKEN_EOF = -2,
     // Invalid (error)
     TOKEN_NULL,
-    // Identifier (\d|_)?\w+
+    // Identifier; regex -> (\d|_)?\w+
     TOKEN_IDENTIFIER,
     // Constants
     TOKEN_INT_NUMBER,
@@ -60,12 +60,8 @@ typedef struct Token {
     size_t line;
 } Token;
 
-Token* tk_create(size_t line);
+void tk_print(Token *tk);
 
-Token* tk_create_op(enum TokenType type, char *value, size_t value_s, size_t line);
-
-void tk_print(Token *token);
-
-void tk_free(Token *token);
+void tk_println(Token *tk);
 
 #endif
