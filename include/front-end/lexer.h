@@ -7,22 +7,34 @@
 
 // It's not recommended to make a buffer with more than 16 KB for old devices compatibility
 #define BUFFER_SIZE 4096
+
+// Standard string pool size
 #define STR_POOL_DEFAULT_SIZE 32
+
+// This multiplier is used for reallocing string pool size
+// It's not recommended to realloc one by one byte, because some reasons:
+//  Heap memory allocation, reallocation or freeing is't fast
+//  Reallocing many times can couse memory fragmentation, causing errors or slowing down program flow
 #define STR_POOL_MULTIPLIER 1.5
  
 // Represents a Lexer object for... lexer phase ¯\_(ツ)_/¯
 typedef struct Lexer {
     // Current file linked on this object
     FILE *_file;
+    // Current line of file
+    size_t line;
+    // Current collum of line
+    size_t collum;
     // File offset, aka file cursor
     size_t fileOffset;
     // Buffer offset, aka buffer cursor
-    size_t bufferOffset;
+    unsigned short bufferOffset;
     // Buffer with 4096B (4KB)
+    // A buffer is used to read giant files fast, and without errors, making a more bug free software
     char buffer[BUFFER_SIZE];
     // Buffer size
-    // If the buffer size is less than 4096, it means we are in the last 4KB block of the file
-    size_t buffer_s;
+    // (If the buffer size is less than 4096, it means we are in the last 4KB block of the file)
+    unsigned short buffer_s;
     // Current char
     char _char;
     // Memory pools
@@ -73,5 +85,7 @@ Token* lx_getNext(Lexer *lx);
 Token* lx_getNextInLine(Lexer *lx);
 
 // Token types identifier
+
+// In development...
 
 #endif
