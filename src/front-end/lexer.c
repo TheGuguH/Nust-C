@@ -2,6 +2,7 @@
 
 #include "error.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -26,8 +27,9 @@ Lexer* lx_create(char *file) {
     if (lx->_token == NULL)
         err_printExit(ERROR_MALLOC_FAILED, "Failed to malloc a Token string pool in Lexer");
 
-    // Open file and set offset to 0
+    // Open file and set offset and line to 0
     lx->_file = fopen(file, "r");
+    lx->line = 0;
     lx->fileOffset = 0;
 
     // If file equals null, that means the file don't exists (or we can't access)
@@ -84,15 +86,71 @@ void lx_addChar(Lexer *lx, char _char) {
 /*
  This functions has few possible cases:
 
- 1º: we reach the end of buffer
+ 1º: if we reach the end of file, set the char to 'EOF' and return
+ 2º: we reach the end of buffer
   In this case we need to treat some others cases:
-   If the buffer is less than 4096, set lexer char to 'EOF'
-   Else (the buffer size will be 4096) we read the next buffer, and ANOTHER other cases:
-    If the lenght of the new buffer is more than 0 or ins't the EOF, we go normally
-    Else we set lexer char to 'EOF'
- 2º: if we not reach the end of buffer, we get the next char
- 3º: if we reach the end of file, we set the char to 'EOF'
+   We read the next buffer
+   If the new buffer size is greater than 0 and we don't reach the eof, get the next char
+   Else, set char to 'EOF' and return
+ 3º: if we not reach the end of buffer, get the next char
+
+ EOF represents the end of file, a char type, so it can be:
+  signed char: EOF = -1
+  unsigned char: EOF = 255
+ ALWAYS 0xff!
 */
 void lx_skip(Lexer *lx) {
 
+    // Add one to buffer and file offset (aka cursor)
+    lx->fileOffset++;
+    lx->bufferOffset++;
+
+    // Every 'new line' char is a new line and a new collum!
+    if (lx->_char == '\n') {
+
+        lx->line++;
+        lx->collum = 0;
+    } else
+        lx->collum++;
+
+    // 1º case (eof)
+    if (feof(lx->_file) || (lx->buffer_s < BUFFER_SIZE && lx->bufferOffset == lx->buffer_s)) {
+
+        lx->_char = EOF;
+
+        // return... we don't have more to work ¯\_(ツ)_/¯
+        return;
+    }
+
+    // 2º case (end of buffer)
+    if (lx->bufferOffset == lx->buffer_s) {
+
+        lx->buffer_s = fread(lx->buffer, 1, BUFFER_SIZE, lx->_file);
+
+        // 1º case (buffer is greater than 0 and we don't reach the end of file) of 2º (end of buffer)...
+        if (lx->buffer_s > 0 && !feof(lx->_file)) {
+
+            lx->bufferOffset = 0;
+            lx->_char = lx->buffer[0];
+        } else { // 2º case (we reach end of file or the buffer is less or equals than 0) of 2º (end of buffer)...
+
+            lx->_char = EOF;
+
+            // return... we don't have more to work ¯\_(ツ)_/¯
+            return;
+        }
+    } else // 3º case (not end of buffer)
+        lx->_char = lx->buffer[lx->bufferOffset];
+}
+
+void lx_skipBlank(Lexer *lx) {
+
+    while (isgraph(lx->_char) == 0)
+        lx_skip(lx);
+}
+
+void lx_skipBlankInLine(Lexer *lx) {
+
+    while (lx->_char == ' ' || lx->_char == '\t' || lx->_char == '\v' || lx->_char == '\f')
+        lx_skip(lx);
 }

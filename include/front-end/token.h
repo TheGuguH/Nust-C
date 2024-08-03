@@ -58,6 +58,7 @@ typedef struct Token {
     char *value;
     size_t value_s;
     size_t line;
+    size_t collum;
 } Token;
 
 void tk_print(Token *tk);
