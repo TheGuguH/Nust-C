@@ -1,6 +1,7 @@
 #include "front-end/lexer.h"
 
 #include "error.h"
+#include "front-end/token.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -187,15 +188,17 @@ void lx_skip(Lexer *lx) {
         lx->_char = lx->buffer[lx->bufferOffset];
 }
 
-void lx_skipBlank(Lexer *lx) {
+void lx_skipSpace(Lexer *lx) {
 
-    while (isgraph(lx->_char) == 0)
+    // C "spaces" are new line (\n), tabs (\v and \t), feed (\f), carriege return (\r) and space ( )
+    while (isspace(lx->_char))
         lx_skip(lx);
 }
 
-void lx_skipBlankInLine(Lexer *lx) {
+void lx_skipBlank(Lexer *lx) {
 
-    while (lx->_char == ' ' || lx->_char == '\t' || lx->_char == '\v' || lx->_char == '\f')
+    // C "blanks" are space ( ) and horizontal tabs (\t)
+    while (isblank(lx->_char))
         lx_skip(lx);
 }
 
@@ -212,8 +215,180 @@ void lx_skipBlankInLine(Lexer *lx) {
 */
 Token* lx_getToken(Lexer *lx) {
     
+    lx_tk_reset(lx); // reset the previus token
+
     if (lx->_char == '#')
         lx_getPreProcessor(lx);
+    else if (lx->_char == '$')
+        lx_getAssembly(lx);
+    else if (isdigit(lx->_char))
+        lx_getNumber(lx);
+    else if (lx->_char == '_')
+        lx_getIdentifier(lx);
+    else if (isalpha(lx->_char))
+        lx_getWord(lx);
+    else
+        lx_getSymbol(lx);
 
-    return NULL;
+    return lx->_token;
+}
+
+Token* lx_getNext(Lexer *lx) {
+
+    lx_skipSpace(lx);
+
+    return lx_getToken(lx);
+}
+
+Token* lx_getNextInLine(Lexer *lx) {
+
+    lx_skipBlank(lx);
+
+    return lx_getToken(lx);
+}
+
+/*
+ A preprocessor start with a '#' and ALWAYS have at last a alpha character and NEVER a digit
+*/
+void lx_getPreProcessor(Lexer *lx) {
+
+    // Skip the '#'
+    lx_skip(lx);
+
+    while(isalpha(lx->_char)) {
+
+        lx_addChar(lx, lx->_char);
+
+        lx_skip(lx);
+    }
+
+    // ALWAYS need to have a charracter
+    if (lx->_token->value_s == 0)
+        lx->_token->type = TOKEN_INVALID;
+
+    // Never can have a digit
+    if (isdigit(lx->_char)) 
+        lx->_token->type = TOKEN_INVALID;
+}
+
+/*
+ A assembler preprocessor/macro start with a "$_", ALWAYS upper characters and end with '_'
+*/
+void lx_getAssembly(Lexer *lx) {
+
+    // Skip the '$'
+    lx_skip(lx);
+
+    // Start with a '_'
+    if (lx->_char != '_') {
+
+        lx->_token->type = TOKEN_INVALID;
+
+        return;
+    }
+
+    // Skip the '_'
+    lx_skip(lx);
+
+    // Only upper alpha characters
+    while(isalpha(lx->_char)) {
+
+        // Only UPPER characters
+        if (islower(lx->_char)) {
+
+            lx->_token->type = TOKEN_INVALID;
+
+            return;
+        }
+
+        lx_addChar(lx, lx->_char);
+
+        lx_skip(lx);
+    }
+
+    // End with a '_'
+    if (lx->_char != '_')
+        lx->_token->type = TOKEN_INVALID;
+
+    lx_skip(lx);
+
+    // ALWAYS need to have a charracter
+    if (lx->_token->value_s == 0)
+        lx->_token->type = TOKEN_INVALID;
+
+    // Never can have a digit or text after, only symbols
+    if (isalpha(lx->_char)) 
+        lx->_token->type = TOKEN_INVALID;
+}
+
+void lx_getNumber(Lexer *lx) {
+    
+    while(isdigit(lx->_char)) {
+
+        lx_addChar(lx, lx->_char);
+
+        lx_skip(lx);
+
+        // A number can't be the end of file by the language rules and syntax
+        if (lx->_char == EOF) {
+
+            lx->_token->type = TOKEN_INVALID;
+
+            return;
+        }
+    }
+
+    // By the language rules and syntax, a digit cannot be followed by a identifier or keyword
+    // Exemple of invalid:
+    //  90787hello (hello is a identifier or keyword)
+    // Exemple of correct (for Lexer, but is not for semantic/syntax analyser):
+    //  90787 hello (hello is a identifier or keyword)
+    if (isalpha(lx->_char) || lx->_char == '_') 
+        lx->_token->type = TOKEN_INVALID;
+}
+
+void lx_getIdentifier(Lexer *lx) {
+
+    lx_getWord(lx);
+
+    lx->_token->type = TOKEN_IDENTIFIER;
+}
+
+void lx_getWord(Lexer *lx) {
+
+    while(isalnum(lx->_char) || lx->_char == '_') {
+
+        lx_addChar(lx, lx->_char);
+
+        lx_skip(lx);
+
+        // A word can't be the end of file by the language rules and syntax
+        if (lx->_char == EOF) {
+
+            lx->_token->type = TOKEN_INVALID;
+
+            return;
+        }
+    }
+}
+
+void lx_getSymbol(Lexer *lx) {
+
+    switch(lx->_char) {
+        case '=':
+            lx_skip(lx);
+
+            if (lx->_char == '=')
+                lx->_token->type = TOKEN_EQUALS;
+            else {
+                return;
+                lx->_token->type = TOKEN_RECEIVE;
+            }
+        break;
+        case ';':
+            lx->_token->type = TOKEN_SEMICOLON;
+        break;
+    }
+
+    lx_skip(lx);
 }

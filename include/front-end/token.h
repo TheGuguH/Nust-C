@@ -15,8 +15,7 @@ enum TokenType {
     TOKEN_FLOAT_NUMBER,
     TOKEN_CHAR_CONSTANT,
     TOKEN_STRING_CONSTANT,
-    // Keywords
-    //  Symbols
+    // Symbols
     TOKEN_LPARENTHESES,   //(
     TOKEN_RPARENTHESES,   //)
     TOKEN_LBRACKET,       //[
@@ -26,11 +25,22 @@ enum TokenType {
     TOKEN_COMMA,          //,
     TOKEN_DOT,            //.
     TOKEN_COLON,          //:
-    //   Arithmetic
+    TOKEN_SEMICOLON,      //;
+    //  Arithmetic
+    TOKEN_RECEIVE,        //=
     TOKEN_ADD,
     TOKEN_SUBTRACT,
     TOKEN_MULTIPLY,
     TOKEN_DIVIDE,
+    //  Logic
+    TOKEN_EQUALS,         //==
+    TOKEN_NOT,
+    TOKEN_EQUALS_NOT,
+    TOKEN_LESS,
+    TOKEN_EQUALS_LESS,
+    TOKEN_GREATHER,
+    TOKEN_EQUALS_GEATHER,
+    // Keywords
     //  Flow control
     TOKEN_GOTO,
     TOKEN_IF,
