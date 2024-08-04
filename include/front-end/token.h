@@ -7,7 +7,7 @@ enum TokenType {
     // End of File
     TOKEN_EOF = -2,
     // Invalid (error)
-    TOKEN_NULL,
+    TOKEN_INVALID,
     // Identifier; regex -> (\d|_)?\w+
     TOKEN_IDENTIFIER,
     // Constants
@@ -51,6 +51,10 @@ enum TokenType {
     TOKEN_BOOLEAN,
     TOKEN_CHAR,
     TOKEN_STRING,
+    // Preprocessors
+    TOKEN_PREPROCESSOR,
+    // Assembly directives
+    TOKEN_ASSEMBLER_DEFINE,
 };
 
 typedef struct Token {

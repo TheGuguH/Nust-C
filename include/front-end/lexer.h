@@ -64,6 +64,14 @@ void lx_free(Lexer *lx);
 // Add char to string memory pool
 void lx_addChar(Lexer *lx, char _char);
 
+// Token related functions
+
+// Reset the _token of Lexer *lx
+void lx_tk_reset(Lexer *lx);
+
+// Copy the current token to a new heap location/object
+Token* lx_tk_copy(Lexer *lx);
+
 // Utils
 
 // Get the next char in lexer
@@ -76,7 +84,7 @@ void lx_skipBlank(Lexer *lx);
 void lx_skipBlankInLine(Lexer *lx);
 
 // Call the correct function for a token based on lexer char
-Token* lx_getToken(Token *tk);
+Token* lx_getToken(Lexer *lx);
 
 // Get the next token
 Token* lx_getNext(Lexer *lx);
@@ -84,8 +92,21 @@ Token* lx_getNext(Lexer *lx);
 // Get the next token in the same line
 Token* lx_getNextInLine(Lexer *lx);
 
-// Token types identifier
+// Token types identifier (no implementation)
 
-// In development...
+// Get preprocessors (start with '#')
+Token* lx_getPreProcessor(Lexer *lx);
+
+// Get Assembler directives (start with '$')
+Token* lx_getAssembly(Lexer *lx);
+
+// Get numbers constants
+Token* lx_getNumber(Lexer *lx);
+
+// Read the word and set to string pool
+void lx_readWord(Lexer *lx);
+
+// Identify if the string in string pool is a keyword or a identifer
+enum TokenType lx_identifyKeyWord(Lexer *lx);
 
 #endif

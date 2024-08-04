@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Heap manipulation
 
@@ -81,6 +82,49 @@ void lx_addChar(Lexer *lx, char _char) {
     lx->strPool[lx->_token->value_s] = '\0';
 }
 
+// Token related functions
+
+void lx_tk_reset(Lexer *lx) {
+    
+    // Reset token to defaults
+    lx->_token->type = TOKEN_INVALID;
+    lx->_token->value = lx->strPool;
+    lx->_token->value_s = 0;
+
+    // String pool too!
+    lx->strPool[0] = '\0';
+}
+
+Token* lx_tk_copy(Lexer *lx) {
+    
+    // Alloc heap memory for token (is not recommended to use heap pointers in stack memory!) and string
+    Token *tk = malloc(sizeof(Token));
+
+    if (tk == NULL)
+        err_printExit(ERROR_MALLOC_FAILED, "Failed to alloc memory for a Token");
+
+    // It will set ALL bytes to 0. It's used for arrays or strings
+    tk->value = calloc(sizeof(char), lx->_token->value_s + 1);
+
+    if (tk->value == NULL)
+        err_printExit(ERROR_MALLOC_FAILED, "Failed to alloc memory for a Token value");
+
+    // Because 'calloc' insted 'malloc', this line is not necessary
+    // tk->value[0] = '\0';
+
+    // Apprend n string pools chars to token value
+    strncat(tk->value, lx->strPool, lx->_token->value_s);
+
+    // Set the values...
+    tk->type = lx->_token->type;
+    tk->value_s = lx->_token->value_s;
+    tk->line = lx->line;
+    tk->collum = lx->collum;
+
+    // And now the token has been copied! Basically a ctrl + c and ctrl + v
+    return tk;
+}
+
 // Utils
 
 /*
@@ -153,4 +197,23 @@ void lx_skipBlankInLine(Lexer *lx) {
 
     while (lx->_char == ' ' || lx->_char == '\t' || lx->_char == '\v' || lx->_char == '\f')
         lx_skip(lx);
+}
+
+/*
+ This function get the token based on _char from Lexer *lx
+
+ Has some types of tokens:
+ 1º: '#' -> its means the token will be a preprocessor
+ 2º: '$' -> its means the token will be a assembler directive (or assembler define)
+ 3º: '0-9' -> its means the token will be a number constant
+ 4º: '_' -> its mens the token will be a identifier
+ 5º: 'a-z|A-Z' its means the token will be a keyword or a identifier (we need to understand what will be)
+ 6º: otherwise, it will be a symbol
+*/
+Token* lx_getToken(Lexer *lx) {
+    
+    if (lx->_char == '#')
+        lx_getPreProcessor(lx);
+
+    return NULL;
 }
