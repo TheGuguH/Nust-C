@@ -14,6 +14,9 @@ enum EErrorCode {
     ERROR_UTF8_INVALID_LENGHT,
     ERROR_UTF8_NO_NEXT_BYTE,
     ERROR_UTF8_OVERLONG,
+    // Lexer errors
+    ERROR_LEXER_EARLY_EOF,
+    ERROR_LEXER_INVALID_TOKEN,
 };
 
 enum EWarnCode {

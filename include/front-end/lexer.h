@@ -77,11 +77,11 @@ Token* lx_tk_copy(Lexer *lx);
 // Get the next char in lexer
 void lx_skip(Lexer *lx);
 
+// Get the next char non-space in the same line in lexer
+void lx_skipSpace(Lexer *lx);
+
 // Get the next char non-blank (i.e., not a space or invisible character) in lexer
 void lx_skipBlank(Lexer *lx);
-
-// Get the next char non-blank in the same line in lexer
-void lx_skipBlankInLine(Lexer *lx);
 
 // Call the correct function for a token based on lexer char
 Token* lx_getToken(Lexer *lx);
@@ -95,13 +95,22 @@ Token* lx_getNextInLine(Lexer *lx);
 // Token types identifier (no implementation)
 
 // Get preprocessors (start with '#')
-Token* lx_getPreProcessor(Lexer *lx);
+void lx_getPreProcessor(Lexer *lx);
 
 // Get Assembler directives (start with '$')
-Token* lx_getAssembly(Lexer *lx);
+void lx_getAssembly(Lexer *lx);
 
 // Get numbers constants
-Token* lx_getNumber(Lexer *lx);
+void lx_getNumber(Lexer *lx);
+
+// Get the identifier (can start with '_')
+void lx_getIdentifier(Lexer *lx);
+
+// Get the word (don't start with '_'), returning a keyword or a identifier
+void lx_getWord(Lexer *lx);
+
+// Get the symbol
+void lx_getSymbol(Lexer *lx);
 
 // Read the word and set to string pool
 void lx_readWord(Lexer *lx);
