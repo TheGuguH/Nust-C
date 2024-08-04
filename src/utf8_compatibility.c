@@ -1,6 +1,6 @@
 #include "utf8_compatibility.h"
 
-#include "error_codes.h"
+#include "error.h"
 
 #include <stdint.h>
 #include <stdio.h>

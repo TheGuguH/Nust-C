@@ -21,10 +21,10 @@ enum EWarnCode {
     WARN_EARLY_EOF,
 };
 
-void err_print(const enum EErrorCode code, const char *error, ...);
+void err_print(enum EErrorCode code, const char *error, ...);
 
-void err_warn(const enum EWarnCode code, const char *warn, ...);
+void err_warn(enum EWarnCode code, const char *warn, ...);
 
-void err_printExit(const enum EErrorCode code, const char *error, ...);
+void err_printExit(enum EErrorCode code, const char *error, ...);
 
 #endif
